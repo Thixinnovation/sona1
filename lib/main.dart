@@ -2,16 +2,14 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:thix_id/auth/auth_controller.dart';
 import 'package:thix_id/auth/supabase_auth_manager.dart';
-import 'package:thix_id/firebase_options.dart';
 import 'package:thix_id/l10n/app_localizations.dart';
 import 'package:thix_id/l10n/locale_controller.dart';
 import 'package:thix_id/nav.dart';
 import 'package:thix_id/supabase/supabase_config.dart';
 import 'package:thix_id/theme.dart';
-import 'package:thix_id/services/cart_service.dart'; // ✅ AJOUT
+import 'package:thix_id/services/cart_service.dart';
 
 /// Main entry point for the application
 ///
@@ -19,6 +17,7 @@ import 'package:thix_id/services/cart_service.dart'; // ✅ AJOUT
 /// - Provider state management (ThemeProvider, CounterProvider)
 /// - go_router navigation
 /// - Material 3 theming with light/dark modes
+/// - Supabase backend (authentication & database)
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -45,19 +44,11 @@ Future<void> main() async {
     );
   };
 
+  // Initialize Supabase
   try {
     await SupabaseConfig.initialize();
   } catch (e, st) {
     debugPrint('Main: SupabaseConfig.initialize failed err=$e');
-    debugPrint(st.toString());
-  }
-
-  // Push notifications (FCM) are used for both mobile and web.
-  // We keep Firebase optional (app should still boot if Firebase is misconfigured).
-  try {
-    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  } catch (e, st) {
-    debugPrint('Main: Firebase.initializeApp failed err=$e');
     debugPrint(st.toString());
   }
 
@@ -96,7 +87,7 @@ class _MyAppState extends State<MyApp> {
       providers: [
         ChangeNotifierProvider.value(value: widget.auth),
         ChangeNotifierProvider.value(value: _localeController),
-        ChangeNotifierProvider(create: (_) => CartService()), // ✅ AJOUT
+        ChangeNotifierProvider(create: (_) => CartService()),
       ],
       child: Builder(
         builder: (context) {

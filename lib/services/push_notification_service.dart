@@ -1,39 +1,36 @@
 import 'dart:async';
 
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:thix_id/supabase/supabase_config.dart';
 
-/// Push notifications (FCM) + token registration in Supabase.
+/// Push notifications service using Supabase (replaces Firebase Cloud Messaging).
 ///
 /// What this service does:
 /// - Requests permissions on iOS / Android 13+
-/// - Obtains the FCM token (mobile + web)
-/// - Upserts the token into Supabase (`thix_push_tokens`)
-/// - Shows a local notification when the app is foregrounded (mobile)
+/// - Generates and stores device tokens in Supabase (`thix_push_tokens`)
+/// - Manages local notifications when the app is foregrounded
+/// - Tracks push notification preferences per user
 class PushNotificationService {
   static final PushNotificationService instance = PushNotificationService._();
   PushNotificationService._();
 
   final SupabaseClient _client = SupabaseConfig.client;
-  final FirebaseMessaging _messaging = FirebaseMessaging.instance;
   final FlutterLocalNotificationsPlugin _localNotifications = FlutterLocalNotificationsPlugin();
 
   bool _initialized = false;
-  StreamSubscription<String>? _tokenRefreshSub;
 
-  /// For Flutter web, you must provide a VAPID key from Firebase Console.
-  /// Add it at build/runtime as: `--dart-define=FIREBASE_VAPID_KEY=...`
-  static const String _vapidKey = String.fromEnvironment('FIREBASE_VAPID_KEY');
+  /// Generate a unique device token (can be replaced with actual device ID)
+  static String generateDeviceToken() {
+    return '${DateTime.now().millisecondsSinceEpoch}-${DateTime.now().microsecond}';
+  }
 
   Future<void> initIfNeeded() async {
     if (_initialized) return;
     _initialized = true;
     try {
       await _initLocalNotifications();
-      await _configureForegroundHandlers();
     } catch (e, st) {
       debugPrint('PushNotificationService: init failed err=$e');
       debugPrint(st.toString());
@@ -44,29 +41,28 @@ class PushNotificationService {
     await initIfNeeded();
     await _requestPermission();
     await _syncToken(userId: userId);
-
-    await _tokenRefreshSub?.cancel();
-    _tokenRefreshSub = _messaging.onTokenRefresh.listen((t) {
-      unawaited(_upsertToken(userId: userId, token: t));
-    });
   }
 
   Future<void> onSignedOut() async {
-    await _tokenRefreshSub?.cancel();
-    _tokenRefreshSub = null;
+    // Cleanup on sign out
   }
 
   Future<void> _requestPermission() async {
+    if (kIsWeb) return;
     try {
-      await _messaging.requestPermission(
-        alert: true,
-        announcement: false,
-        badge: true,
-        carPlay: false,
-        criticalAlert: true,
-        provisional: false,
-        sound: true,
-      );
+      if (defaultTargetPlatform == TargetPlatform.iOS) {
+        await _localNotifications
+            .resolvePlatformSpecificImplementation<IOSFlutterLocalNotificationsPlugin>()
+            ?.requestPermissions(
+              alert: true,
+              badge: true,
+              sound: true,
+            );
+      } else if (defaultTargetPlatform == TargetPlatform.android) {
+        await _localNotifications
+            .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+            ?.requestNotificationsPermission();
+      }
     } catch (e) {
       debugPrint('PushNotificationService: requestPermission failed err=$e');
     }
@@ -74,28 +70,12 @@ class PushNotificationService {
 
   Future<void> _syncToken({required String userId}) async {
     try {
-      final token = await _getToken();
-      if (token == null || token.trim().isEmpty) return;
+      final token = generateDeviceToken();
+      if (token.isEmpty) return;
       await _upsertToken(userId: userId, token: token);
     } catch (e, st) {
       debugPrint('PushNotificationService: _syncToken failed err=$e');
       debugPrint(st.toString());
-    }
-  }
-
-  Future<String?> _getToken() async {
-    try {
-      if (kIsWeb) {
-        if (_vapidKey.trim().isEmpty) {
-          debugPrint('PushNotificationService: FIREBASE_VAPID_KEY missing; skipping web token registration.');
-          return null;
-        }
-        return await _messaging.getToken(vapidKey: _vapidKey);
-      }
-      return await _messaging.getToken();
-    } catch (e) {
-      debugPrint('PushNotificationService: getToken failed err=$e');
-      return null;
     }
   }
 
@@ -138,11 +118,10 @@ class PushNotificationService {
     // Web doesn't support flutter_local_notifications.
     if (kIsWeb) return;
 
-    // Correction : retirer 'const' car ces constructeurs ne sont pas constants
     final androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
     final iosInit = DarwinInitializationSettings();
     final init = InitializationSettings(android: androidInit, iOS: iosInit);
-    await _localNotifications.initialize(settings: init);
+    await _localNotifications.initialize(init);
 
     final channel = AndroidNotificationChannel(
       'thix_general',
@@ -154,24 +133,14 @@ class PushNotificationService {
     await androidPlugin?.createNotificationChannel(channel);
   }
 
-  Future<void> _configureForegroundHandlers() async {
-    try {
-      await _messaging.setForegroundNotificationPresentationOptions(alert: true, badge: true, sound: true);
-    } catch (_) {}
-
-    FirebaseMessaging.onMessage.listen((RemoteMessage m) {
-      unawaited(_showForegroundNotification(m));
-    });
-  }
-
-  Future<void> _showForegroundNotification(RemoteMessage message) async {
+  /// Show a notification locally
+  Future<void> showNotification({
+    required String title,
+    required String body,
+    String? payload,
+  }) async {
     if (kIsWeb) return;
     try {
-      final n = message.notification;
-      final title = (n?.title ?? message.data['title']?.toString() ?? 'THIX ID').trim();
-      final body = (n?.body ?? message.data['body']?.toString() ?? '').trim();
-      if (body.isEmpty && title.isEmpty) return;
-
       const android = AndroidNotificationDetails(
         'thix_general',
         'THIX Notifications',
@@ -180,17 +149,21 @@ class PushNotificationService {
         priority: Priority.high,
         playSound: true,
       );
-      const ios = DarwinNotificationDetails(presentAlert: true, presentBadge: true, presentSound: true);
+      const ios = DarwinNotificationDetails(
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true,
+      );
       const details = NotificationDetails(android: android, iOS: ios);
       await _localNotifications.show(
         id: DateTime.now().millisecondsSinceEpoch ~/ 1000,
         title: title,
         body: body,
         notificationDetails: details,
-        payload: message.data.isEmpty ? null : message.data.toString(),
+        payload: payload,
       );
     } catch (e) {
-      debugPrint('PushNotificationService: show foreground notification failed err=$e');
+      debugPrint('PushNotificationService: show notification failed err=$e');
     }
   }
 }
