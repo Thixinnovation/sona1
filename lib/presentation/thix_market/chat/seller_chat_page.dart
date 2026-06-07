@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../../services/market/market_chat_service.dart';
-import '../../../models/market/market_chat.dart';
+import '../../../services/market_chat_service.dart';
+import '../../../models/market_chat.dart';
 
 class SellerChatPage extends StatefulWidget {
   final String conversationId;
@@ -171,7 +171,6 @@ class _SellerChatPageState extends State<SellerChatPage> {
             bottomLeft: isMe ? const Radius.circular(16) : const Radius.circular(4),
             bottomRight: isMe ? const Radius.circular(4) : const Radius.circular(16),
           ),
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 4)],
         ),
         child: ConstrainedBox(
           constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
