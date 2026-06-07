@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../../models/product.dart';
 import '../../../services/cart_service.dart';
 import '../../../services/wishlist_service.dart';
+import '../../../services/market/market_chat_service.dart';
 import 'widgets/quantity_selector.dart';
 import 'widgets/rating_stars.dart';
 import 'widgets/product_location.dart';
@@ -19,14 +20,21 @@ class ProductDetailPage extends StatefulWidget {
 class _ProductDetailPageState extends State<ProductDetailPage> {
   int _quantity = 1;
   late WishlistService _wishlistService;
+  late MarketChatService _chatService;
   bool _isInWishlist = false;
   String? _userId;
+  String? _userName;
+  String? _userAvatar;
 
   @override
   void initState() {
     super.initState();
     _wishlistService = WishlistService(Supabase.instance.client);
-    _userId = Supabase.instance.client.auth.currentUser?.id;
+    _chatService = MarketChatService(Supabase.instance.client);
+    final user = Supabase.instance.client.auth.currentUser;
+    _userId = user?.id;
+    _userName = user?.userMetadata?['name'] ?? user?.email?.split('@').first ?? 'Utilisateur';
+    _userAvatar = user?.userMetadata?['avatar_url'] ?? '';
     _checkWishlist();
   }
 
@@ -38,13 +46,86 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   }
 
   Future<void> _toggleWishlist() async {
-    if (_userId == null) return;
+    if (_userId == null) {
+      _showLoginRequired();
+      return;
+    }
     if (_isInWishlist) {
       await _wishlistService.removeFromWishlist(_userId!, widget.product.id);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Retiré des favoris'), backgroundColor: Colors.grey),
+      );
     } else {
       await _wishlistService.addToWishlist(_userId!, widget.product.id);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Ajouté aux favoris'), backgroundColor: Colors.green),
+      );
     }
     setState(() => _isInWishlist = !_isInWishlist);
+  }
+
+  Future<void> _startChat() async {
+    if (_userId == null) {
+      _showLoginRequired();
+      return;
+    }
+
+    if (_userId == widget.product.sellerId) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Vous ne pouvez pas discuter avec vous-même'), backgroundColor: Colors.orange),
+      );
+      return;
+    }
+
+    setState(() {});
+
+    try {
+      final conversation = await _chatService.getOrCreateConversation(
+        productId: widget.product.id,
+        productTitle: widget.product.title,
+        productImage: widget.product.imageUrl,
+        sellerId: widget.product.sellerId,
+        sellerName: widget.product.seller,
+        sellerAvatar: widget.product.sellerAvatar,
+        buyerId: _userId!,
+        buyerName: _userName!,
+        buyerAvatar: _userAvatar ?? '',
+      );
+
+      if (!mounted) return;
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => SellerChatPage(
+            conversationId: conversation.id,
+            otherUserName: widget.product.seller,
+            otherUserAvatar: widget.product.sellerAvatar,
+            productTitle: widget.product.title,
+          ),
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erreur: $e'), backgroundColor: Colors.red),
+      );
+    }
+  }
+
+  void _showLoginRequired() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Veuillez vous connecter pour continuer'),
+        backgroundColor: Colors.orange,
+        action: SnackBarAction(
+          label: 'Se connecter',
+          textColor: Colors.white,
+          onPressed: () {
+            // Naviguer vers login
+          },
+        ),
+      ),
+    );
   }
 
   @override
@@ -73,8 +154,37 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Image
-            Image.network(widget.product.imageUrl, height: 300, width: double.infinity, fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => Container(height: 300, color: Colors.grey.shade200, child: const Icon(Icons.image_not_supported, size: 50))),
+            Stack(
+              children: [
+                Image.network(
+                  widget.product.imageUrl,
+                  height: 300,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => Container(
+                    height: 300,
+                    color: Colors.grey.shade200,
+                    child: const Icon(Icons.image_not_supported, size: 50),
+                  ),
+                ),
+                if (widget.product.discountPercent > 0)
+                  Positioned(
+                    top: 16,
+                    left: 16,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.red,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        '-${widget.product.discountPercent.toStringAsFixed(0)}%',
+                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
             
             Padding(
               padding: const EdgeInsets.all(16),
@@ -91,9 +201,15 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                   Row(
                     children: [
                       if (widget.product.oldPrice != null)
-                        Text(widget.product.formattedOldPrice, style: const TextStyle(decoration: TextDecoration.lineThrough, color: Colors.grey, fontSize: 16)),
+                        Text(
+                          widget.product.formattedOldPrice,
+                          style: const TextStyle(decoration: TextDecoration.lineThrough, color: Colors.grey, fontSize: 16),
+                        ),
                       const SizedBox(width: 8),
-                      Text(widget.product.formattedPrice, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFFD4AF37))),
+                      Text(
+                        widget.product.formattedPrice,
+                        style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFFD4AF37)),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 12),
@@ -122,6 +238,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                     decoration: BoxDecoration(
                       color: Colors.grey.shade50,
                       borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.grey.shade200),
                     ),
                     child: Row(
                       children: [
@@ -131,7 +248,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                               ? NetworkImage(widget.product.sellerAvatar)
                               : null,
                           child: widget.product.sellerAvatar.isEmpty
-                              ? const Icon(Icons.store, size: 20)
+                              ? const Icon(Icons.store, size: 20, color: Color(0xFFD4AF37))
                               : null,
                         ),
                         const SizedBox(width: 12),
@@ -140,17 +257,25 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(widget.product.seller, style: const TextStyle(fontWeight: FontWeight.bold)),
-                              Text('Vendeur vérifié', style: TextStyle(fontSize: 11, color: Colors.grey.shade600)),
+                              Row(
+                                children: [
+                                  const Icon(Icons.verified, size: 12, color: Colors.green),
+                                  const SizedBox(width: 4),
+                                  Text('Vendeur vérifié', style: TextStyle(fontSize: 11, color: Colors.grey.shade600)),
+                                ],
+                              ),
                             ],
                           ),
                         ),
-                        OutlinedButton(
-                          onPressed: () => _startChat(),
+                        OutlinedButton.icon(
+                          onPressed: _startChat,
+                          icon: const Icon(Icons.chat_outlined, size: 16),
+                          label: const Text('Contacter'),
                           style: OutlinedButton.styleFrom(
                             side: const BorderSide(color: Color(0xFFD4AF37)),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                            foregroundColor: const Color(0xFFD4AF37),
                           ),
-                          child: const Text('Contacter', style: TextStyle(color: Color(0xFFD4AF37))),
                         ),
                       ],
                     ),
@@ -160,7 +285,10 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                   // Description
                   const Text('Description', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 8),
-                  Text(widget.product.description.isNotEmpty ? widget.product.description : 'Aucune description disponible.'),
+                  Text(
+                    widget.product.description.isNotEmpty ? widget.product.description : 'Aucune description disponible.',
+                    style: const TextStyle(height: 1.5),
+                  ),
                   const SizedBox(height: 16),
                   
                   // Quantité
@@ -182,7 +310,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                     SizedBox(
                       width: double.infinity,
                       height: 50,
-                      child: ElevatedButton(
+                      child: ElevatedButton.icon(
                         onPressed: () {
                           cartService.addItem(widget.product, quantity: _quantity);
                           ScaffoldMessenger.of(context).showSnackBar(
@@ -190,12 +318,13 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                           );
                           Navigator.pop(context);
                         },
+                        icon: const Icon(Icons.shopping_cart_outlined),
+                        label: const Text('AJOUTER AU PANIER', style: TextStyle(fontWeight: FontWeight.bold)),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFFD4AF37),
                           foregroundColor: const Color(0xFF0B1B3D),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
                         ),
-                        child: const Text('AJOUTER AU PANIER', style: TextStyle(fontWeight: FontWeight.bold)),
                       ),
                     ),
                   ],
@@ -205,14 +334,6 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
           ],
         ),
       ),
-    );
-  }
-
-  void _startChat() {
-    // Navigation vers la page de chat
-    // context.push('/chat/seller/${widget.product.sellerId}?product=${widget.product.id}');
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Chat avec le vendeur - Bientôt disponible'), backgroundColor: Colors.orange),
     );
   }
 }
