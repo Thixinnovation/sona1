@@ -511,7 +511,7 @@ class _HomePagePremiumState extends State<HomePagePremium>
                               icon: Icons.play_circle_filled,
                               title: 'THIX MEDIA',
                               iconColor: Colors.blue,
-                              badgeCount: counts.media,
+                              badgeCount: 0,
                               onTap: () => context.push(AppRoutes.thixMedia),
                             ),
                             _PremiumServiceCard(
