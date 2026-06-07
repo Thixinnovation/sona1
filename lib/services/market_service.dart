@@ -29,20 +29,20 @@ class MarketService {
   }
 
   Future<List<Product>> getProductsByCategory(String category, {int limit = 20}) async {
-    var query = _supabase
-        .from('market_products')
-        .select('*')
-        .eq('in_stock', true)
-        .order('created_at', ascending: false)
-        .limit(limit);
-    
-    if (category != 'Tous') {
-      query = query.eq('category', category);
-    }
-    
-    final response = await query;
-    return (response as List).map((e) => Product.fromJson(e)).toList();
+  var query = _supabase
+      .from('market_products')
+      .select('*')
+      .eq('in_stock', true)
+      .eq('is_featured', true)
+      .order('created_at', ascending: false);
+  
+  if (category != 'Tous') {
+    query = query.eq('category', category);
   }
+  
+  final response = await query.limit(limit);
+  return (response as List).map((e) => Product.fromJson(e)).toList();
+}
 
   Future<List<Product>> searchProducts(String query) async {
     if (query.isEmpty) return [];
