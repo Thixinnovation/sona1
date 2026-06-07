@@ -37,6 +37,9 @@ import 'presentation/training/learning_dashboard_page.dart';
 import 'presentation/training/lesson_player_page.dart';
 import 'presentation/admin/admin_page.dart';
 import 'presentation/thix_market/thix_market_page.dart';
+import 'presentation/thix_market/cart_page.dart';
+import 'presentation/thix_market/checkout_page.dart';
+import 'presentation/thix_market/order_history_page.dart';
 import 'presentation/thix_sante/thix_sante_page.dart';
 import 'presentation/thix_reservation/thix_reservation_page.dart';
 import 'presentation/thix_money/thix_money_page.dart';
@@ -72,6 +75,10 @@ class AppRoutes {
   static const String education = '/education';
   static const String trainingHome = '/training';
   static const String admin = '/admin';
+  static const String market = '/market';
+  static const String marketCart = '/market/cart';
+  static const String marketCheckout = '/market/checkout';
+  static const String marketOrders = '/market/orders';
 }
 
 class AppRouter {
@@ -270,11 +277,29 @@ class AppRouter {
           pageBuilder: (context, state) => const NoTransitionPage(child: EducationPage()),
         ),
 
-        // ==================== THIX SERVICES ROUTES ====================
+        // ==================== THIX MARKET ROUTES ====================
         GoRoute(
-          path: '/market',
+          path: AppRoutes.market,
+          name: 'market',
           pageBuilder: (context, state) => const NoTransitionPage(child: ThixMarketPage()),
         ),
+        GoRoute(
+          path: AppRoutes.marketCart,
+          name: 'marketCart',
+          pageBuilder: (context, state) => const NoTransitionPage(child: CartPage()),
+        ),
+        GoRoute(
+          path: AppRoutes.marketCheckout,
+          name: 'marketCheckout',
+          pageBuilder: (context, state) => const NoTransitionPage(child: CheckoutPage()),
+        ),
+        GoRoute(
+          path: AppRoutes.marketOrders,
+          name: 'marketOrders',
+          pageBuilder: (context, state) => const NoTransitionPage(child: OrderHistoryPage()),
+        ),
+
+        // ==================== THIX SERVICES ROUTES ====================
         GoRoute(
           path: '/sante',
           pageBuilder: (context, state) => const NoTransitionPage(child: ThixSantePage()),
@@ -293,13 +318,11 @@ class AppRouter {
         ),
 
         // ==================== ADMIN ROUTES ====================
-        // Route admin racine (redirige vers overview)
         GoRoute(
           path: AppRoutes.admin,
           name: 'adminRoot',
           redirect: (_, __) => '/admin/overview',
         ),
-        // Route admin avec module dynamique
         GoRoute(
           path: '/admin/:module',
           name: 'admin',
@@ -323,18 +346,15 @@ class AppRouter {
       case 'overview':
         return AdminModule.overview;
       
-      // Account Access Requests
       case 'account-access-requests':
       case 'access-requests':
       case 'accessrequests':
         return AdminModule.accessRequests;
 
-      // User Management
       case 'user-management':
       case 'users':
         return AdminModule.users;
 
-      // Verification
       case 'verification-center':
       case 'verification':
         return AdminModule.verification;
@@ -344,12 +364,10 @@ class AppRouter {
       case 'trainings':
         return AdminModule.trainings;
 
-      // THIX UID
       case 'thix-uid':
       case 'uid':
         return AdminModule.uid;
 
-      // Jobs & Opportunities
       case 'jobs-opportunities':
       case 'jobs':
         return AdminModule.jobs;
@@ -395,5 +413,4 @@ class AppRouter {
         return AdminModule.overview;
     }
   }
-} // ← Cette accolade ferme la classe AppRouter
-
+}
