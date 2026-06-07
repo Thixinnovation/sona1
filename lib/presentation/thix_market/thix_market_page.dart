@@ -9,7 +9,6 @@ import 'product_detail_page.dart';
 import 'widgets/products_grid.dart';
 import 'package:thix_id/auth/auth_controller.dart';
 import 'widgets/product_card.dart';
-import 'widgets/filter_sheet.dart';
 
 class ThixMarketPage extends StatefulWidget {
   const ThixMarketPage({super.key});
@@ -29,7 +28,7 @@ class _ThixMarketPageState extends State<ThixMarketPage> {
 
   // Filtres avancés
   String _sortBy = 'newest';
-  RangeValues _priceRange = const RangeValues(0, 10000000);
+  RangeValues _priceRange = const RangeValues(0, 5000000);
   double _minRating = 0;
   String _selectedCity = 'Toutes';
 
@@ -57,6 +56,7 @@ class _ThixMarketPageState extends State<ThixMarketPage> {
   Future<void> _loadData() async {
     setState(() => _loading = true);
     try {
+      // Charger depuis Supabase uniquement
       final flash = await _marketService.getFlashSales();
       final all = await _marketService.getFeaturedProducts();
       setState(() {
@@ -66,59 +66,12 @@ class _ThixMarketPageState extends State<ThixMarketPage> {
       });
     } catch (e) {
       debugPrint('Error loading market data: $e');
-      _loadDemoData();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erreur de chargement: $e'), backgroundColor: Colors.red),
+      );
     } finally {
       setState(() => _loading = false);
     }
-  }
-
-  void _loadDemoData() {
-    _flashSales = [
-      Product(
-        id: '1', title: 'Écouteurs sans fil Premium Pro', description: 'Qualité sonore exceptionnelle', 
-        price: 199500, oldPrice: 285000,
-        category: 'Électronique', imageUrl: 'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=300&h=300&fit=crop',
-        rating: 4.8, reviewsCount: 124, seller: 'THIX Store', sellerId: '', sellerAvatar: '',
-        stock: 15, city: 'Kinshasa', country: 'RDC', inStock: true, isFlashSale: true, flashDiscount: 30,
-        createdAt: DateTime.now(),
-      ),
-      Product(
-        id: '2', title: 'Montre Connectée THIX Watch 5', description: 'Suivi sportif et santé', 
-        price: 455000, oldPrice: 605000,
-        category: 'Électronique', imageUrl: 'https://images.unsplash.com/photo-1546868871-7041f2a55e12?w=300&h=300&fit=crop',
-        rating: 4.9, reviewsCount: 89, seller: 'THIX Tech', sellerId: '', sellerAvatar: '',
-        stock: 8, city: 'Lubumbashi', country: 'RDC', inStock: true, isFlashSale: true, flashDiscount: 25,
-        createdAt: DateTime.now(),
-      ),
-      Product(
-        id: '3', title: 'Sneakers Air N Édition Limitée', description: 'Confort et style', 
-        price: 340000, oldPrice: 425000,
-        category: 'Mode & Fashion', imageUrl: 'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=300&h=300&fit=crop',
-        rating: 4.7, reviewsCount: 63, seller: 'THIX Fashion', sellerId: '', sellerAvatar: '',
-        stock: 12, city: 'Kinshasa', country: 'RDC', inStock: true, isFlashSale: true, flashDiscount: 20,
-        createdAt: DateTime.now(),
-      ),
-    ];
-    _allProducts = [
-      ..._flashSales,
-      Product(id: '4', title: 'iPhone 15 Pro', description: 'Le dernier smartphone Apple', price: 2500000, oldPrice: null, 
-        category: 'Électronique', imageUrl: 'https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=300&h=300&fit=crop', 
-        rating: 4.9, reviewsCount: 450, seller: 'Apple Store', sellerId: '', sellerAvatar: '',
-        stock: 5, city: 'Kinshasa', country: 'RDC', inStock: true, createdAt: DateTime.now()),
-      Product(id: '5', title: 'Casque Audio Bluetooth', description: 'Son haute fidélité', price: 275000, oldPrice: 395000, 
-        category: 'Électronique', imageUrl: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=300&h=300&fit=crop', 
-        rating: 4.6, reviewsCount: 230, seller: 'Sony', sellerId: '', sellerAvatar: '',
-        stock: 20, city: 'Goma', country: 'RDC', inStock: true, createdAt: DateTime.now()),
-      Product(id: '6', title: 'Sac à main Cuir', description: 'Collection luxe', price: 540000, oldPrice: 725000, 
-        category: 'Mode & Fashion', imageUrl: 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=300&h=300&fit=crop', 
-        rating: 4.8, reviewsCount: 178, seller: 'Luxury Bags', sellerId: '', sellerAvatar: '',
-        stock: 7, city: 'Bukavu', country: 'RDC', inStock: true, createdAt: DateTime.now()),
-      Product(id: '7', title: 'Smart TV 55" 4K', description: 'Qualité image exceptionnelle', price: 1250000, oldPrice: 1650000, 
-        category: 'Électronique', imageUrl: 'https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=300&h=300&fit=crop', 
-        rating: 4.7, reviewsCount: 312, seller: 'Samsung', sellerId: '', sellerAvatar: '',
-        stock: 3, city: 'Lubumbashi', country: 'RDC', inStock: true, createdAt: DateTime.now()),
-    ];
-    _applyFiltersAndSort();
   }
 
   void _applyFiltersAndSort() {
