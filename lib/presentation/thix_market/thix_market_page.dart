@@ -12,6 +12,7 @@ import 'widgets/product_card.dart';
 import 'package:thix_id/presentation/common/banner_carousel.dart';
 import 'package:thix_id/services/banner_service.dart';
 import 'package:thix_id/models/banner.dart';
+import 'package:thix_id/services/market/market_chat_service.dart';
 
 class ThixMarketPage extends StatefulWidget {
   const ThixMarketPage({super.key});
