@@ -23,16 +23,16 @@ import 'package:thix_id/services/thix_id_service.dart';
 
 /// Palette Ultra-Premium Institutionnelle - THIX ID 2026
 class ThixPremiumColors {
-  static const Color primaryDark = Color(0xFF0B1B3D); // Nouvelle couleur demandée
-  static const Color primaryElectric = Color(0xFF1A2D56);
-  static const Color accentBlue = Color(0xFF002B5C);
+  static const Color primaryDark = Color(0xFF0A1128);
+  static const Color primaryElectric = Color(0xFF1C2541);
+  static const Color accentBlue = Color(0xFF001F54);
   static const Color goldPrimary = Color(0xFFD4AF37);
   static const Color goldLight = Color(0xFFF3E5AB);
   static const Color goldDark = Color(0xFFAA7C11);
   static const Color white = Color(0xFFFFFFFF);
-  static const Color backgroundDark = Color(0xFF060C1A);
+  static const Color backgroundLight = Color(0xFFF8FAFC);
   static const Color grayDark = Color(0xFF111827);
-  static const Color grayMedium = Color(0xFF6B7280);
+  static const Color grayMedium = Color(0xFF4B5563);
   static const Color grayLight = Color(0xFFE5E7EB);
 }
 
@@ -58,13 +58,9 @@ class _OptionButton extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          border: Border.all(color: ThixPremiumColors.goldPrimary.withOpacity(0.3)),
+          border: Border.all(color: ThixPremiumColors.grayLight),
           borderRadius: BorderRadius.circular(14),
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [ThixPremiumColors.primaryDark, ThixPremiumColors.primaryElectric],
-          ),
+          color: ThixPremiumColors.backgroundLight.withOpacity(0.5),
         ),
         child: Row(
           children: [
@@ -72,9 +68,7 @@ class _OptionButton extends StatelessWidget {
               width: 38,
               height: 38,
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [ThixPremiumColors.goldDark, ThixPremiumColors.goldPrimary],
-                ),
+                color: ThixPremiumColors.primaryDark.withOpacity(0.06),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(icon, color: ThixPremiumColors.primaryDark, size: 20),
@@ -89,7 +83,7 @@ class _OptionButton extends StatelessWidget {
                     style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w800,
-                      color: ThixPremiumColors.goldPrimary,
+                      color: ThixPremiumColors.primaryDark,
                     ),
                   ),
                   Text(
@@ -102,7 +96,7 @@ class _OptionButton extends StatelessWidget {
                 ],
               ),
             ),
-            const Icon(Icons.arrow_forward_ios_rounded, size: 12, color: ThixPremiumColors.goldPrimary),
+            const Icon(Icons.arrow_forward_ios_rounded, size: 12, color: ThixPremiumColors.goldDark),
           ],
         ),
       ),
@@ -118,11 +112,7 @@ class AccountRequestSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [ThixPremiumColors.primaryDark, ThixPremiumColors.primaryElectric],
-        ),
+        color: ThixPremiumColors.white,
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(24),
           topRight: Radius.circular(24),
@@ -137,7 +127,7 @@ class AccountRequestSheet extends StatelessWidget {
               width: 35,
               height: 4,
               decoration: BoxDecoration(
-                color: ThixPremiumColors.goldPrimary.withOpacity(0.5),
+                color: ThixPremiumColors.grayLight,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -147,7 +137,7 @@ class AccountRequestSheet extends StatelessWidget {
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w800,
-                color: ThixPremiumColors.goldPrimary,
+                color: ThixPremiumColors.primaryDark,
               ),
             ),
             const SizedBox(height: 20),
@@ -215,9 +205,9 @@ class _HomePagePremiumState extends State<HomePagePremium>
   void _navigateToChat() {
     final auth = context.read<AuthController>();
     if (auth.isAuthenticated) {
-      context.push(AppRoutes.chat);
+      context.go(AppRoutes.chat);
     } else {
-      context.push(AppRoutes.login);
+      context.go(AppRoutes.login);
     }
   }
 
@@ -226,12 +216,12 @@ class _HomePagePremiumState extends State<HomePagePremium>
     if (auth.isAuthenticated) {
       final user = auth.currentUser;
       if (user?.accountType == AccountType.enterprise) {
-        context.push(AppRoutes.enterpriseDashboard);
+        context.go(AppRoutes.enterpriseDashboard);
       } else {
-        context.push(AppRoutes.userDashboard);
+        context.go(AppRoutes.userDashboard);
       }
     } else {
-      context.push(AppRoutes.login);
+      context.go(AppRoutes.login);
     }
   }
 
@@ -315,7 +305,7 @@ class _HomePagePremiumState extends State<HomePagePremium>
     final auth = context.read<AuthController>();
     if (auth.isAuthenticated) {
       final t = auth.currentUser?.accountType;
-      context.push(
+      context.go(
         t == AccountType.enterprise
             ? AppRoutes.enterpriseDashboard
             : AppRoutes.userDashboard,
@@ -367,27 +357,10 @@ class _HomePagePremiumState extends State<HomePagePremium>
         : _counters.streamCounts(auth.currentUser!.id);
 
     return Scaffold(
-      backgroundColor: ThixPremiumColors.backgroundDark,
+      backgroundColor: ThixPremiumColors.backgroundLight,
       extendBody: true,
       body: Stack(
         children: [
-          // Background futuriste avec effet de grille et particules
-          Container(
-            decoration: BoxDecoration(
-              gradient: RadialGradient(
-                center: Alignment.topCenter,
-                radius: 1.5,
-                colors: [
-                  ThixPremiumColors.primaryDark,
-                  ThixPremiumColors.backgroundDark,
-                ],
-              ),
-            ),
-            child: CustomPaint(
-              painter: _FuturisticGridPainter(),
-              child: Container(),
-            ),
-          ),
           NotificationListener<ScrollNotification>(
             onNotification: (notification) {
               if (notification is ScrollUpdateNotification) {
@@ -398,13 +371,12 @@ class _HomePagePremiumState extends State<HomePagePremium>
               return false;
             },
             child: CustomScrollView(
-              physics: const BouncingScrollPhysics(),
+              physics: const NeverScrollableScrollPhysics(),
               slivers: [
                 SliverToBoxAdapter(
                   child: _PremiumHeader(
                     safeTop: safeTop,
                     onProfileTap: _onProfileTap,
-                    onRequestAccount: () => _handleRequestAccount(context),
                   ),
                 ),
                 const SliverToBoxAdapter(child: SizedBox(height: 60)),
@@ -418,6 +390,8 @@ class _HomePagePremiumState extends State<HomePagePremium>
                             title: 'Scanner un QR',
                             subtitle: 'Scannez en sécurité',
                             icon: Icons.qr_code_scanner_rounded,
+                            backgroundColor: Colors.white,
+                            iconColor: ThixPremiumColors.goldPrimary,
                             onTap: () {
                               ThixIdentitySheets.showQrScanSheet(context);
                             },
@@ -429,6 +403,8 @@ class _HomePagePremiumState extends State<HomePagePremium>
                             title: 'Lire via NFC',
                             subtitle: 'Approchez l\'appareil',
                             icon: Icons.fingerprint_rounded,
+                            backgroundColor: Colors.white,
+                            iconColor: ThixPremiumColors.primaryDark,
                             onTap: () {
                               ThixIdentitySheets.showNfcScanSheet(context);
                             },
@@ -453,7 +429,7 @@ class _HomePagePremiumState extends State<HomePagePremium>
                     ),
                   ),
                 ),
-                const SliverToBoxAdapter(child: SizedBox(height: 24)),
+                const SliverToBoxAdapter(child: SizedBox(height: 0)),
                 SliverPadding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   sliver: SliverToBoxAdapter(
@@ -461,29 +437,22 @@ class _HomePagePremiumState extends State<HomePagePremium>
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         const Text(
-                          'THIX SERVICES',
+                          'Thix services',
                           style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w900,
-                            color: ThixPremiumColors.goldPrimary,
-                            letterSpacing: 1.5,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w800,
+                            color: ThixPremiumColors.primaryDark,
+                            letterSpacing: -0.3,
                           ),
                         ),
                         GestureDetector(
                           onTap: () {},
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(color: ThixPremiumColors.goldPrimary.withOpacity(0.5)),
-                            ),
-                            child: const Text(
-                              'Tout voir',
-                              style: TextStyle(
-                                color: ThixPremiumColors.goldLight,
-                                fontWeight: FontWeight.w700,
-                                fontSize: 10,
-                              ),
+                          child: const Text(
+                            'Tout voir',
+                            style: TextStyle(
+                              color: ThixPremiumColors.goldDark,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 10,
                             ),
                           ),
                         ),
@@ -491,7 +460,7 @@ class _HomePagePremiumState extends State<HomePagePremium>
                     ),
                   ),
                 ),
-                const SliverToBoxAdapter(child: SizedBox(height: 16)),
+                const SliverToBoxAdapter(child: SizedBox(height: 8)),
                 SliverPadding(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   sliver: SliverToBoxAdapter(
@@ -503,84 +472,95 @@ class _HomePagePremiumState extends State<HomePagePremium>
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
                           crossAxisCount: 4,
-                          crossAxisSpacing: 14,
-                          mainAxisSpacing: 14,
-                          childAspectRatio: 0.95,
+                          crossAxisSpacing: 5,
+                          mainAxisSpacing: 5,
+                          childAspectRatio: 0.92,
                           children: [
-                            _PremiumServiceCard(
+                            _ServiceCard(
                               icon: Icons.play_circle_filled,
                               title: 'THIX MEDIA',
+                              iconBackgroundColor: Colors.blue.shade50,
                               iconColor: Colors.blue,
-                              badgeCount: 0,
                               onTap: () => context.push(AppRoutes.thixMedia),
                             ),
-                            _PremiumServiceCard(
+                            _ServiceCard(
                               icon: Icons.storefront_rounded,
                               title: 'THIX Market',
+                              iconBackgroundColor: const Color(0xFFFFF5E8),
                               iconColor: const Color(0xFFFF9800),
                               onTap: () => context.push(AppRoutes.thixMarket),
                             ),
-                            _PremiumServiceCard(
+                            _ServiceCard(
                               icon: Icons.school_rounded,
                               title: 'Formations',
+                              iconBackgroundColor: const Color(0xFFEAF3FF),
                               iconColor: const Color(0xFF0057D9),
                               badgeCount: counts.formations,
                               onTap: () => context.push(AppRoutes.trainingHome),
                             ),
-                            _PremiumServiceCard(
+                            _ServiceCard(
                               icon: Icons.work_rounded,
                               title: 'Emplois',
+                              iconBackgroundColor: const Color(0xFFE9FFF2),
                               iconColor: const Color(0xFF00A86B),
                               badgeCount: counts.jobs,
                               onTap: () => context.push(AppRoutes.jobs),
                             ),
-                            _PremiumServiceCard(
+                            _ServiceCard(
                               icon: Icons.newspaper_rounded,
                               title: 'THIX INFO',
+                              iconBackgroundColor: const Color(0xFFFFF3E6),
                               iconColor: const Color(0xFFFF9800),
                               badgeCount: counts.info,
                               onTap: () => AlertInfoSheet.show(context),
                             ),
-                            _PremiumServiceCard(
+                            _ServiceCard(
                               icon: Icons.lightbulb_rounded,
                               title: 'Opportunités',
-                              iconColor: ThixPremiumColors.goldPrimary,
+                              iconBackgroundColor: const Color(0xFFFFF8E7),
+                              iconColor: const Color(0xFFD4AF37),
                               onTap: () => context.push(AppRoutes.opportunities),
                             ),
-                            _PremiumServiceCard(
+                            _ServiceCard(
                               icon: Icons.event_rounded,
                               title: 'Événements',
+                              iconBackgroundColor: const Color(0xFFFFEEF1),
                               iconColor: const Color(0xFFE63946),
                               badgeCount: counts.events,
                               onTap: () => context.push(AppRoutes.events),
                             ),
-                            _PremiumServiceCard(
+                            _ServiceCard(
                               icon: Icons.groups_rounded,
                               title: 'Réseau Pro',
+                              iconBackgroundColor: const Color(0xFFEFF7FF),
                               iconColor: const Color(0xFF0077B6),
                               onTap: () => context.push(AppRoutes.network),
                             ),
-                            _PremiumServiceCard(
+                            _ServiceCard(
                               icon: Icons.local_hospital_rounded,
                               title: 'THIX Santé',
+                              iconBackgroundColor: const Color(0xFFFFEEF1),
                               iconColor: const Color(0xFFE63946),
                               onTap: () => context.push(AppRoutes.thixSante),
                             ),
-                            _PremiumServiceCard(
+                            _ServiceCard(
                               icon: Icons.account_balance_wallet_rounded,
                               title: 'Thix Money',
+                              iconBackgroundColor: const Color(0xFFE9FFF2),
                               iconColor: const Color(0xFF00A86B),
                               onTap: () => context.push(AppRoutes.thixMoney),
                             ),
-                            _PremiumServiceCard(
+                            _ServiceCard(
                               icon: Icons.account_balance_rounded,
                               title: 'Services Gov',
+                              iconBackgroundColor: const Color(0xFFEAF3FF),
                               iconColor: const Color(0xFF0057D9),
                               onTap: () {},
                             ),
-                            _PremiumServiceCard(
+                            _ServiceCard(
                               icon: Icons.confirmation_number_rounded,
                               title: 'Réservation',
+                              iconBackgroundColor: const Color(0xFFF8F1FF),
                               iconColor: const Color(0xFF9C27B0),
                               onTap: () => context.push(AppRoutes.reservation),
                             ),
@@ -590,7 +570,13 @@ class _HomePagePremiumState extends State<HomePagePremium>
                     ),
                   ),
                 ),
-                const SliverToBoxAdapter(child: SizedBox(height: 30)),
+                const SliverToBoxAdapter(child: SizedBox(height: 16)),
+                SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  sliver: SliverToBoxAdapter(
+                    child: _MissionBanner(),
+                  ),
+                ),
               ],
             ),
           ),
@@ -610,7 +596,7 @@ class _HomePagePremiumState extends State<HomePagePremium>
           if (_searching)
             Positioned.fill(
               child: Container(
-                color: ThixPremiumColors.primaryDark.withOpacity(0.8),
+                color: ThixPremiumColors.primaryDark.withOpacity(0.4),
                 child: const Center(
                   child: CircularProgressIndicator(
                     color: ThixPremiumColors.goldPrimary,
@@ -630,227 +616,159 @@ class _HomePagePremiumState extends State<HomePagePremium>
   }
 }
 
-// ==================== PAINTER FUTURISTE ====================
-class _FuturisticGridPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = ThixPremiumColors.goldPrimary.withOpacity(0.03)
-      ..strokeWidth = 0.5
-      ..style = PaintingStyle.stroke;
-
-    // Lignes de grille horizontales
-    for (var i = 0; i < size.height / 40; i++) {
-      canvas.drawLine(
-        Offset(0, i * 40),
-        Offset(size.width, i * 40),
-        paint,
-      );
-    }
-
-    // Lignes de grille verticales
-    for (var i = 0; i < size.width / 40; i++) {
-      canvas.drawLine(
-        Offset(i * 40, 0),
-        Offset(i * 40, size.height),
-        paint,
-      );
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
-}
-
 // ==================== HEADER PREMIUM ====================
 class _PremiumHeader extends StatelessWidget {
   final double safeTop;
   final VoidCallback onProfileTap;
-  final VoidCallback onRequestAccount;
-  const _PremiumHeader({
-    required this.safeTop,
-    required this.onProfileTap,
-    required this.onRequestAccount,
-  });
+  const _PremiumHeader({required this.safeTop, required this.onProfileTap});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 160,
-      width: double.infinity,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [ThixPremiumColors.primaryDark, ThixPremiumColors.primaryElectric],
-        ),
-        borderRadius: const BorderRadius.only(
-          bottomLeft: Radius.circular(32),
-          bottomRight: Radius.circular(32),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: ThixPremiumColors.goldPrimary.withOpacity(0.1),
-            blurRadius: 20,
-            offset: const Offset(0, 4),
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Container(
+          height: 150,
+          width: double.infinity,
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [ThixPremiumColors.primaryDark, ThixPremiumColors.primaryElectric],
+            ),
+            borderRadius: BorderRadius.only(
+              bottomLeft: Radius.circular(28),
+              bottomRight: Radius.circular(28),
+            ),
           ),
-        ],
-      ),
-      child: Stack(
-        children: [
-          Positioned(
-            right: -20,
-            top: -20,
-            child: Container(
-              width: 150,
-              height: 150,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: ThixPremiumColors.goldPrimary.withOpacity(0.08),
-                  width: 2,
-                ),
+        ),
+        Positioned(
+          right: -35,
+          top: -15,
+          child: Container(
+            width: 120,
+            height: 120,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: ThixPremiumColors.goldPrimary.withOpacity(0.04),
+                width: 1,
               ),
             ),
           ),
-          Positioned(
-            left: -50,
-            bottom: -30,
-            child: Icon(
-              Icons.fingerprint_rounded,
-              size: 120,
-              color: ThixPremiumColors.goldPrimary.withOpacity(0.03),
-            ),
+        ),
+        Positioned(
+          right: -15,
+          bottom: -5,
+          child: Icon(
+            Icons.fingerprint_rounded,
+            size: 100,
+            color: ThixPremiumColors.goldPrimary.withOpacity(0.03),
           ),
-          Padding(
-            padding: EdgeInsets.fromLTRB(20, safeTop + 8, 20, 0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          width: 44,
-                          height: 44,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(12),
-                            gradient: const LinearGradient(
-                              colors: [ThixPremiumColors.goldDark, ThixPremiumColors.goldPrimary],
-                            ),
-                          ),
-                          child: const Padding(
-                            padding: EdgeInsets.all(2),
-                            child: Card(
-                              margin: EdgeInsets.zero,
-                              color: ThixPremiumColors.primaryDark,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.all(Radius.circular(10)),
-                              ),
-                              child: Icon(
-                                Icons.fingerprint_rounded,
-                                color: ThixPremiumColors.goldPrimary,
-                                size: 22,
-                              ),
-                            ),
+        ),
+        Padding(
+          padding: EdgeInsets.fromLTRB(16, safeTop + 4, 16, 0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(11),
+                          gradient: const LinearGradient(
+                            colors: [ThixPremiumColors.goldDark, ThixPremiumColors.goldLight],
                           ),
                         ),
-                        const SizedBox(width: 12),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'THIX ID',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 18,
-                                fontWeight: FontWeight.w900,
-                                letterSpacing: -0.2,
-                              ),
+                        child: const Padding(
+                          padding: EdgeInsets.all(1.1),
+                          child: Card(
+                            margin: EdgeInsets.zero,
+                            color: ThixPremiumColors.primaryDark,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.all(Radius.circular(10)),
                             ),
-                            Text(
-                              'Identité Sécurisée.',
-                              style: TextStyle(
-                                color: Colors.white.withOpacity(0.7),
-                                fontSize: 10,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    Row(
-                      children: [
-                        GestureDetector(
-                          onTap: onRequestAccount,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(color: ThixPremiumColors.goldPrimary.withOpacity(0.5)),
-                            ),
-                            child: const Text(
-                              'Créer un compte',
-                              style: TextStyle(
-                                color: ThixPremiumColors.goldLight,
-                                fontSize: 11,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        GestureDetector(
-                          onTap: onProfileTap,
-                          child: Container(
-                            width: 42,
-                            height: 42,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: ThixPremiumColors.goldPrimary.withOpacity(0.6),
-                                width: 1.5,
-                              ),
-                              gradient: LinearGradient(
-                                colors: [ThixPremiumColors.primaryDark, ThixPremiumColors.primaryElectric],
-                              ),
-                            ),
-                            child: const Icon(
-                              Icons.person_outline_rounded,
+                            child: Icon(
+                              Icons.fingerprint_rounded,
                               color: ThixPremiumColors.goldPrimary,
-                              size: 22,
+                              size: 20,
                             ),
                           ),
                         ),
-                      ],
+                      ),
+                      const SizedBox(width: 9),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'THIX ID',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: -0.2,
+                            ),
+                          ),
+                          Text(
+                            'Identité Sécurisée.',
+                            style: TextStyle(
+                              color: Colors.white.withOpacity(0.7),
+                              fontSize: 9,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  GestureDetector(
+                    onTap: onProfileTap,
+                    child: Container(
+                      width: 38,
+                      height: 38,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: ThixPremiumColors.goldPrimary.withOpacity(0.5),
+                          width: 1,
+                        ),
+                        color: ThixPremiumColors.primaryDark,
+                      ),
+                      child: const Icon(
+                        Icons.person_outline_rounded,
+                        color: ThixPremiumColors.goldPrimary,
+                        size: 20,
+                      ),
                     ),
-                  ],
-                ),
-                const SizedBox(height: 20),
-                const Text(
-                  'Bienvenue !',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 24,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: -0.4,
                   ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Bienvenue !',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 22,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.4,
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  'Que voulez-vous faire aujourd’hui ?',
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.8),
-                    fontSize: 12,
-                  ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                'Que voulez-vous faire aujourd’hui ?',
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.8),
+                  fontSize: 11,
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
@@ -874,60 +792,69 @@ class _SearchBarOverlayState extends State<_SearchBarOverlay> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 54,
-      padding: const EdgeInsets.symmetric(horizontal: 12),
+      height: 50,
+      padding: const EdgeInsets.symmetric(horizontal: 8),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [ThixPremiumColors.primaryDark, ThixPremiumColors.primaryElectric],
-        ),
-        borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: ThixPremiumColors.goldPrimary.withOpacity(0.4), width: 1.5),
+        color: ThixPremiumColors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: ThixPremiumColors.grayLight, width: 1),
         boxShadow: [
           BoxShadow(
-            color: ThixPremiumColors.goldPrimary.withOpacity(0.2),
-            blurRadius: 15,
-            offset: const Offset(0, 5),
+            color: ThixPremiumColors.primaryDark.withOpacity(0.05),
+            blurRadius: 14,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
       child: Row(
         children: [
-          const Icon(Icons.search_rounded, color: ThixPremiumColors.goldPrimary, size: 20),
-          const SizedBox(width: 8),
+          const SizedBox(width: 4),
+          const Icon(Icons.search_rounded, color: ThixPremiumColors.grayMedium, size: 18),
+          const SizedBox(width: 6),
           Expanded(
             child: TextField(
               controller: widget.controller,
               enabled: !widget.isSearching,
-              style: const TextStyle(color: Colors.white, fontSize: 13),
               decoration: const InputDecoration(
                 border: InputBorder.none,
                 hintText: 'Rechercher un THIX ID...',
-                hintStyle: TextStyle(color: Colors.white54, fontSize: 12),
+                hintStyle: TextStyle(color: Color(0xFF9CA3AF), fontSize: 12),
+              ),
+              style: const TextStyle(
+                color: ThixPremiumColors.primaryDark,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),
           GestureDetector(
             onTap: widget.isSearching ? null : widget.onVerify,
             child: Container(
-              height: 38,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              height: 36,
+              padding: const EdgeInsets.symmetric(horizontal: 14),
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(18),
                 gradient: const LinearGradient(
                   colors: [ThixPremiumColors.goldDark, ThixPremiumColors.goldPrimary],
                 ),
               ),
-              child: const Center(
-                child: Text(
-                  'Vérifier',
-                  style: TextStyle(
-                    color: ThixPremiumColors.primaryDark,
-                    fontWeight: FontWeight.w800,
-                    fontSize: 12,
+              child: const Row(
+                children: [
+                  Text(
+                    'Vérifier',
+                    style: TextStyle(
+                      color: ThixPremiumColors.primaryDark,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 12,
+                    ),
                   ),
-                ),
+                  SizedBox(width: 3),
+                  Icon(
+                    Icons.arrow_forward_rounded,
+                    color: ThixPremiumColors.primaryDark,
+                    size: 13,
+                  ),
+                ],
               ),
             ),
           ),
@@ -938,69 +865,108 @@ class _SearchBarOverlayState extends State<_SearchBarOverlay> {
 }
 
 // ==================== CARTE ACTION RAPIDE ====================
-class _QuickActionCard extends StatelessWidget {
+class _QuickActionCard extends StatefulWidget {
   final String title;
   final String subtitle;
   final IconData icon;
+  final Color backgroundColor;
+  final Color iconColor;
   final VoidCallback onTap;
   const _QuickActionCard({
     required this.title,
     required this.subtitle,
     required this.icon,
+    required this.backgroundColor,
+    required this.iconColor,
     required this.onTap,
   });
 
   @override
+  State<_QuickActionCard> createState() => _QuickActionCardState();
+}
+
+class _QuickActionCardState extends State<_QuickActionCard>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 200),
+      vsync: this,
+    );
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.96).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _onTapDown(_) => _controller.forward();
+  void _onTapUp(_) {
+    _controller.reverse();
+    widget.onTap();
+  }
+  void _onTapCancel() => _controller.reverse();
+
+  @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [ThixPremiumColors.primaryDark, ThixPremiumColors.primaryElectric],
+      onTapDown: _onTapDown,
+      onTapUp: _onTapUp,
+      onTapCancel: _onTapCancel,
+      child: ScaleTransition(
+        scale: _scaleAnimation,
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: widget.backgroundColor,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: ThixPremiumColors.grayLight),
           ),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: ThixPremiumColors.goldPrimary.withOpacity(0.4), width: 1.2),
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [ThixPremiumColors.goldDark, ThixPremiumColors.goldPrimary],
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: ThixPremiumColors.primaryDark.withOpacity(0.04),
+                  borderRadius: BorderRadius.circular(10),
                 ),
-                borderRadius: BorderRadius.circular(10),
+                child: Icon(widget.icon, color: widget.iconColor, size: 22),
               ),
-              child: Icon(icon, color: ThixPremiumColors.primaryDark, size: 20),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w800,
-                      color: ThixPremiumColors.goldLight,
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.title,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w800,
+                        color: ThixPremiumColors.primaryDark,
+                      ),
                     ),
-                  ),
-                  Text(
-                    subtitle,
-                    style: const TextStyle(
-                      fontSize: 10,
-                      color: Colors.white54,
+                    Text(
+                      widget.subtitle,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 10,
+                        color: ThixPremiumColors.grayMedium,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -1019,13 +985,9 @@ class _NotificationPreviewCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [ThixPremiumColors.primaryDark, ThixPremiumColors.primaryElectric],
-          ),
+          color: Colors.white,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: ThixPremiumColors.goldPrimary.withOpacity(0.4), width: 1),
+          border: Border.all(color: ThixPremiumColors.grayLight),
         ),
         child: Row(
           children: [
@@ -1034,9 +996,7 @@ class _NotificationPreviewCard extends StatelessWidget {
               height: 34,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                gradient: const LinearGradient(
-                  colors: [ThixPremiumColors.goldDark, ThixPremiumColors.goldPrimary],
-                ),
+                color: ThixPremiumColors.primaryDark.withOpacity(0.06),
               ),
               child: const Icon(
                 Icons.notifications_none_rounded,
@@ -1054,14 +1014,14 @@ class _NotificationPreviewCard extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w800,
-                      color: ThixPremiumColors.goldLight,
+                      color: ThixPremiumColors.primaryDark,
                     ),
                   ),
                   Text(
                     'Nouvelles mises à jour disponibles',
                     style: TextStyle(
                       fontSize: 11,
-                      color: Colors.white54,
+                      color: ThixPremiumColors.grayMedium,
                     ),
                   ),
                 ],
@@ -1070,7 +1030,7 @@ class _NotificationPreviewCard extends StatelessWidget {
             const Icon(
               Icons.arrow_forward_ios_rounded,
               size: 12,
-              color: ThixPremiumColors.goldPrimary,
+              color: ThixPremiumColors.goldDark,
             ),
           ],
         ),
@@ -1079,99 +1039,202 @@ class _NotificationPreviewCard extends StatelessWidget {
   }
 }
 
-// ==================== CARTE SERVICE PREMIUM ====================
-class _PremiumServiceCard extends StatelessWidget {
+// ==================== CARTE SERVICE ====================
+class _ServiceCard extends StatefulWidget {
   final IconData icon;
   final String title;
+  final Color iconBackgroundColor;
   final Color iconColor;
   final int? badgeCount;
   final VoidCallback onTap;
-  const _PremiumServiceCard({
+  const _ServiceCard({
     required this.icon,
     required this.title,
+    required this.iconBackgroundColor,
     required this.iconColor,
     this.badgeCount,
     required this.onTap,
   });
 
   @override
+  State<_ServiceCard> createState() => _ServiceCardState();
+}
+
+class _ServiceCardState extends State<_ServiceCard>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 150),
+      vsync: this,
+    );
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.95).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [ThixPremiumColors.primaryDark, ThixPremiumColors.primaryElectric],
+      onTapDown: (_) => _controller.forward(),
+      onTapUp: (_) {
+        _controller.reverse();
+        widget.onTap();
+      },
+      onTapCancel: () => _controller.reverse(),
+      child: ScaleTransition(
+        scale: _scaleAnimation,
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: ThixPremiumColors.grayLight, width: 0.8),
           ),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: ThixPremiumColors.goldPrimary.withOpacity(0.5), width: 1.5),
-          boxShadow: [
-            BoxShadow(
-              color: ThixPremiumColors.goldPrimary.withOpacity(0.1),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
-            ),
-          ],
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: 24,
+                      height: 24,
+                      decoration: BoxDecoration(
+                        color: widget.iconBackgroundColor,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Icon(widget.icon, color: widget.iconColor, size: 18),
+                    ),
+                    const SizedBox(height: 6),
+                    Expanded(
+                      child: Text(
+                        widget.title,
+                        textAlign: TextAlign.center,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                          color: ThixPremiumColors.primaryDark,
+                          height: 1.1,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (widget.badgeCount != null && widget.badgeCount! > 0)
+                Positioned(
+                  top: -2,
+                  right: 2,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [ThixPremiumColors.goldDark, ThixPremiumColors.goldPrimary],
+                      ),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      '${widget.badgeCount}',
+                      style: const TextStyle(
+                        color: ThixPremiumColors.primaryDark,
+                        fontSize: 8,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
         ),
-        child: Stack(
-          clipBehavior: Clip.none,
-          children: [
-            Column(
+      ),
+    );
+  }
+}
+
+// ==================== BANNIÈRE MISSION ====================
+class _MissionBanner extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 90,
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(13),
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [ThixPremiumColors.primaryDark, ThixPremiumColors.accentBlue],
+        ),
+        border: Border.all(
+          color: ThixPremiumColors.goldPrimary.withOpacity(0.25),
+        ),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Container(
-                  width: 44,
-                  height: 44,
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [ThixPremiumColors.goldDark, ThixPremiumColors.goldPrimary],
-                    ),
-                    borderRadius: BorderRadius.circular(12),
+                    color: ThixPremiumColors.goldPrimary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(4),
                   ),
-                  child: Icon(icon, color: ThixPremiumColors.primaryDark, size: 24),
+                  child: const Text(
+                    'NOTRE MISSION',
+                    style: TextStyle(
+                      color: ThixPremiumColors.goldLight,
+                      fontSize: 8,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 1.0,
+                    ),
+                  ),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 6),
+                const Text(
+                  'Construisons l\'avenir de la jeunesse.',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 2),
                 Text(
-                  title,
-                  textAlign: TextAlign.center,
-                  maxLines: 2,
+                  'Accédez à des opportunités et un réseau engagé.',
+                  maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.75),
                     fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    color: ThixPremiumColors.goldLight,
-                    height: 1.2,
                   ),
                 ),
               ],
             ),
-            if (badgeCount != null && badgeCount! > 0)
-              Positioned(
-                top: -6,
-                right: -6,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [ThixPremiumColors.goldDark, ThixPremiumColors.goldPrimary],
-                    ),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Text(
-                    '${badgeCount}',
-                    style: const TextStyle(
-                      color: ThixPremiumColors.primaryDark,
-                      fontSize: 9,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
-                ),
-              ),
-          ],
-        ),
+          ),
+          const SizedBox(width: 4),
+          Icon(
+            Icons.shield_outlined,
+            size: 50,
+            color: ThixPremiumColors.goldPrimary.withOpacity(0.15),
+          ),
+        ],
       ),
     );
   }
@@ -1193,34 +1256,26 @@ class _FloatingBottomNav extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ClipRRect(
-      borderRadius: BorderRadius.circular(35),
+      borderRadius: BorderRadius.circular(30),
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+        filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
         child: Container(
-          height: 65,
-          margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          height: 60,
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                ThixPremiumColors.primaryDark.withOpacity(0.95),
-                ThixPremiumColors.primaryElectric.withOpacity(0.95),
-              ],
-            ),
-            borderRadius: BorderRadius.circular(35),
-            border: Border.all(color: ThixPremiumColors.goldPrimary.withOpacity(0.4), width: 1),
+            color: ThixPremiumColors.white.withOpacity(0.88),
+            borderRadius: BorderRadius.circular(30),
+            border: Border.all(color: Colors.white.withOpacity(0.5)),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               _NavItem(icon: Icons.home_filled, label: 'Accueil', active: true, onTap: () {}),
-              _NavItem(icon: Icons.grid_view_rounded, label: 'Services', active: false, onTap: () {}),
+              _NavItem(icon: Icons.grid_view_rounded, label: 'Services', onTap: () {}),
               GestureDetector(
                 onTap: onEmergencyTap,
                 child: Container(
-                  width: 52,
-                  height: 52,
+                  width: 50,
+                  height: 50,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     gradient: const LinearGradient(
@@ -1228,25 +1283,24 @@ class _FloatingBottomNav extends StatelessWidget {
                     ),
                     border: Border.all(
                       color: Colors.white.withOpacity(0.4),
-                      width: 2,
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFFE53935).withOpacity(0.5),
-                        blurRadius: 10,
-                        offset: const Offset(0, 3),
+                        color: Color(0xFFE53935).withOpacity(0.5),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
                       ),
                     ],
                   ),
                   child: const Icon(
                     Icons.warning_rounded,
                     color: Colors.white,
-                    size: 26,
+                    size: 24,
                   ),
                 ),
               ),
-              _NavItem(icon: Icons.chat_bubble_outline_rounded, label: 'Messages', active: false, onTap: onChatTap),
-              _NavItem(icon: Icons.person_outline_rounded, label: 'Profil', active: false, onTap: onProfileTap),
+              _NavItem(icon: Icons.chat_bubble_outline_rounded, label: 'Messages', onTap: onChatTap),
+              _NavItem(icon: Icons.person_outline_rounded, label: 'Profil', onTap: onProfileTap),
             ],
           ),
         ),
@@ -1263,7 +1317,7 @@ class _NavItem extends StatelessWidget {
   const _NavItem({
     required this.icon,
     required this.label,
-    required this.active,
+    this.active = false,
     required this.onTap,
   });
 
@@ -1276,8 +1330,8 @@ class _NavItem extends StatelessWidget {
         children: [
           Icon(
             icon,
-            color: active ? ThixPremiumColors.goldPrimary : Colors.white54,
-            size: 22,
+            color: active ? ThixPremiumColors.primaryDark : ThixPremiumColors.grayMedium,
+            size: 20,
           ),
           const SizedBox(height: 2),
           Text(
@@ -1285,7 +1339,7 @@ class _NavItem extends StatelessWidget {
             style: TextStyle(
               fontSize: 9,
               fontWeight: active ? FontWeight.w800 : FontWeight.w500,
-              color: active ? ThixPremiumColors.goldPrimary : Colors.white54,
+              color: active ? ThixPremiumColors.primaryDark : ThixPremiumColors.grayMedium,
             ),
           ),
         ],
