@@ -3,11 +3,11 @@ import 'package:provider/provider.dart';
 import '../../../models/product.dart';
 import '../../../services/cart_service.dart';
 import '../../../services/wishlist_service.dart';
-import '../../../services/market/market_chat_service.dart';
+import '../../../services/market_chat_service.dart';
+import '../../thix_market/chat/seller_chat_page.dart';
 import 'widgets/quantity_selector.dart';
 import 'widgets/rating_stars.dart';
 import 'widgets/product_location.dart';
-import '../chat/seller_chat_page.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ProductDetailPage extends StatefulWidget {
