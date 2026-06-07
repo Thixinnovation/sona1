@@ -1,7 +1,7 @@
-// lib/presentation/common/banner_carousel.dart
+import 'dart:async';
 import 'package:flutter/material.dart';
-import '../../models/banner.dart';
 import 'package:go_router/go_router.dart';
+import '../../models/banner.dart';
 
 class BannerCarousel extends StatefulWidget {
   final List<BannerAd> banners;
@@ -29,9 +29,16 @@ class _BannerCarouselState extends State<BannerCarousel> {
     if (widget.banners.length > 1) {
       _timer = Timer.periodic(widget.interval, (timer) {
         if (_currentPage + 1 < widget.banners.length) {
-          _pageController.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+          _pageController.nextPage(
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+          );
         } else {
-          _pageController.animateToPage(0, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+          _pageController.animateToPage(
+            0,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+          );
         }
       });
     }
@@ -97,11 +104,20 @@ class _BannerCarouselState extends State<BannerCarousel> {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text('THIX SERVICES', style: TextStyle(color: Color(0xFFD4AF37), fontSize: 12, fontWeight: FontWeight.bold)),
+                const Text(
+                  'THIX SERVICES',
+                  style: TextStyle(color: Color(0xFFD4AF37), fontSize: 12, fontWeight: FontWeight.bold),
+                ),
                 const SizedBox(height: 4),
-                const Text('Découvrez tous nos services', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                const Text(
+                  'Découvrez tous nos services',
+                  style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                ),
                 const SizedBox(height: 4),
-                Text('Une plateforme complète pour vous accompagner', style: TextStyle(color: Colors.white70, fontSize: 10)),
+                Text(
+                  'Une plateforme complète pour vous accompagner',
+                  style: TextStyle(color: Colors.white70, fontSize: 10),
+                ),
               ],
             ),
           ),
@@ -152,9 +168,15 @@ class _BannerCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(banner.title, style: TextStyle(color: banner.textColor, fontSize: 14, fontWeight: FontWeight.bold)),
+                        Text(
+                          banner.title,
+                          style: TextStyle(color: banner.textColor, fontSize: 14, fontWeight: FontWeight.bold),
+                        ),
                         const SizedBox(height: 4),
-                        Text(banner.subtitle, style: TextStyle(color: banner.textColor.withOpacity(0.9), fontSize: 12)),
+                        Text(
+                          banner.subtitle,
+                          style: TextStyle(color: banner.textColor.withOpacity(0.9), fontSize: 12),
+                        ),
                         const SizedBox(height: 8),
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -162,7 +184,10 @@ class _BannerCard extends StatelessWidget {
                             color: banner.textColor,
                             borderRadius: BorderRadius.circular(20),
                           ),
-                          child: Text(banner.buttonText, style: TextStyle(color: banner.backgroundColor, fontSize: 11, fontWeight: FontWeight.bold)),
+                          child: Text(
+                            banner.buttonText,
+                            style: TextStyle(color: banner.backgroundColor, fontSize: 11, fontWeight: FontWeight.bold),
+                          ),
                         ),
                       ],
                     ),
