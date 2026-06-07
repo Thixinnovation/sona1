@@ -36,7 +36,9 @@ class _SellerChatPageState extends State<SellerChatPage> {
     _scrollController = ScrollController();
     final user = Supabase.instance.client.auth.currentUser;
     _currentUserId = user?.id ?? '';
-    _currentUserName = user?.userMetadata?['name'] ?? user?.email?.split('@').first ?? 'Utilisateur';
+    _currentUserName = user?.userMetadata?['name'] ??
+        user?.email?.split('@').first ??
+        'Utilisateur';
     _markAsRead();
   }
 
@@ -48,7 +50,9 @@ class _SellerChatPageState extends State<SellerChatPage> {
   }
 
   Future<void> _markAsRead() async {
-    await _chatService.markAsRead(widget.conversationId, _currentUserId);
+    if (_currentUserId.isNotEmpty) {
+      await _chatService.markAsRead(widget.conversationId, _currentUserId);
+    }
   }
 
   Future<void> _sendMessage() async {
@@ -57,15 +61,22 @@ class _SellerChatPageState extends State<SellerChatPage> {
 
     _messageController.clear();
     
-    await _chatService.sendMessage(
-      conversationId: widget.conversationId,
-      senderId: _currentUserId,
-      senderName: _currentUserName,
-      senderAvatar: '',
-      message: text,
-    );
-
-    _scrollToBottom();
+    try {
+      await _chatService.sendMessage(
+        conversationId: widget.conversationId,
+        senderId: _currentUserId,
+        senderName: _currentUserName,
+        senderAvatar: '',
+        message: text,
+      );
+      _scrollToBottom();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erreur: $e')),
+        );
+      }
+    }
   }
 
   void _scrollToBottom() {
@@ -105,13 +116,20 @@ class _SellerChatPageState extends State<SellerChatPage> {
                 children: [
                   Text(
                     widget.otherUserName,
-                    style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   Text(
                     widget.productTitle,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(color: Colors.white70, fontSize: 10),
+                    style: const TextStyle(
+                      color: Colors.white70,
+                      fontSize: 10,
+                    ),
                   ),
                 ],
               ),
@@ -129,8 +147,13 @@ class _SellerChatPageState extends State<SellerChatPage> {
             child: StreamBuilder<List<MarketMessage>>(
               stream: _chatService.getMessages(widget.conversationId),
               builder: (context, snapshot) {
-                if (!snapshot.hasData) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
+                }
+                if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return const Center(
+                    child: Text('Aucun message pour le moment'),
+                  );
                 }
                 final messages = snapshot.data!;
                 
@@ -168,12 +191,22 @@ class _SellerChatPageState extends State<SellerChatPage> {
           borderRadius: BorderRadius.only(
             topLeft: const Radius.circular(16),
             topRight: const Radius.circular(16),
-            bottomLeft: isMe ? const Radius.circular(16) : const Radius.circular(4),
-            bottomRight: isMe ? const Radius.circular(4) : const Radius.circular(16),
+            bottomLeft:
+                isMe ? const Radius.circular(16) : const Radius.circular(4),
+            bottomRight:
+                isMe ? const Radius.circular(4) : const Radius.circular(16),
           ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.03),
+              blurRadius: 4,
+            )
+          ],
         ),
         child: ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
+          constraints: BoxConstraints(
+            maxWidth: MediaQuery.of(context).size.width * 0.75,
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -182,16 +215,34 @@ class _SellerChatPageState extends State<SellerChatPage> {
                   padding: const EdgeInsets.only(bottom: 4),
                   child: Text(
                     message.senderName,
-                    style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF0B1B3D)),
+                    style: const TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF0B1B3D),
+                    ),
                   ),
                 ),
-              Text(message.message, style: TextStyle(color: isMe ? const Color(0xFF0B1B3D) : Colors.black87, fontSize: 14)),
+              Text(
+                message.message,
+                style: TextStyle(
+                  color: isMe
+                      ? const Color(0xFF0B1B3D)
+                      : Colors.black87,
+                  fontSize: 14,
+                ),
+              ),
               const SizedBox(height: 4),
               Align(
                 alignment: Alignment.bottomRight,
                 child: Text(
                   _formatTime(message.timestamp),
-                  style: TextStyle(fontSize: 10, color: (isMe ? const Color(0xFF0B1B3D) : Colors.grey.shade500).withOpacity(0.7)),
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: (isMe
+                            ? const Color(0xFF0B1B3D)
+                            : Colors.grey.shade500)
+                        .withOpacity(0.7),
+                  ),
                 ),
               ),
             ],
@@ -206,7 +257,12 @@ class _SellerChatPageState extends State<SellerChatPage> {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         color: Colors.white,
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 8)],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 8,
+          )
+        ],
       ),
       child: Row(
         children: [
@@ -221,7 +277,10 @@ class _SellerChatPageState extends State<SellerChatPage> {
                 ),
                 filled: true,
                 fillColor: Colors.grey.shade100,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 10,
+                ),
               ),
               onSubmitted: (_) => _sendMessage(),
             ),
@@ -236,7 +295,11 @@ class _SellerChatPageState extends State<SellerChatPage> {
                 color: Color(0xFFD4AF37),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.send_rounded, color: Color(0xFF0B1B3D), size: 20),
+              child: const Icon(
+                Icons.send_rounded,
+                color: Color(0xFF0B1B3D),
+                size: 20,
+              ),
             ),
           ),
         ],

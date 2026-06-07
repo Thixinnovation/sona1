@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class MarketConversation {
   final String id;
@@ -46,7 +46,7 @@ class MarketConversation {
       sellerName: json['seller_name'],
       sellerAvatar: json['seller_avatar'] ?? '',
       lastMessage: json['last_message'] ?? '',
-      lastMessageAt: DateTime.parse(json['last_message_at']),
+      lastMessageAt: DateTime.parse(json['last_message_at'].toString()),
       unreadCount: json['unread_count'] ?? 0,
       isActive: json['is_active'] ?? true,
     );
@@ -84,7 +84,7 @@ class MarketMessage {
       senderName: json['sender_name'],
       senderAvatar: json['sender_avatar'] ?? '',
       message: json['message'],
-      timestamp: DateTime.parse(json['created_at']),
+      timestamp: DateTime.parse(json['created_at'].toString()),
       isRead: json['is_read'] ?? false,
       imageUrl: json['image_url'],
     );
