@@ -1,4 +1,3 @@
-// lib/services/market/market_chat_service.dart
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../models/market/market_chat.dart';
 
@@ -18,6 +17,7 @@ class MarketChatService {
     required String buyerName,
     required String buyerAvatar,
   }) async {
+    // Vérifier si une conversation existe déjà
     final existing = await _supabase
         .from('market_conversations')
         .select('*')
@@ -30,6 +30,7 @@ class MarketChatService {
       return MarketConversation.fromJson(existing);
     }
 
+    // Créer une nouvelle conversation
     final newConversation = {
       'product_id': productId,
       'product_title': productTitle,
@@ -79,6 +80,7 @@ class MarketChatService {
     
     final sentMessage = MarketMessage.fromJson((response as List).first);
 
+    // Mettre à jour le dernier message de la conversation
     await _supabase
         .from('market_conversations')
         .update({
@@ -118,22 +120,13 @@ class MarketChatService {
   }
 
   Future<int> getUnreadCount(String userId) async {
-    final conversations = await _supabase
-        .from('market_conversations')
-        .select('id')
-        .eq('buyer_id', userId);
+    final response = await _supabase
+        .from('market_messages')
+        .select('id', count: CountOption.exact)
+        .eq('is_read', false)
+        .neq('sender_id', userId);
     
-    int totalUnread = 0;
-    for (final conv in conversations) {
-      final unread = await _supabase
-          .from('market_messages')
-          .select('id', count: CountOption.exact)
-          .eq('conversation_id', conv['id'])
-          .eq('is_read', false)
-          .neq('sender_id', userId);
-      totalUnread += unread.count ?? 0;
-    }
-    return totalUnread;
+    return response.count ?? 0;
   }
 
   Future<void> deleteConversation(String conversationId) async {
