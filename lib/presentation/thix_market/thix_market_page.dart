@@ -199,7 +199,7 @@ class _ThixMarketPageState extends State<ThixMarketPage> {
                 foregroundColor: const Color(0xFF0B1B3D),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
               ),
-              child: const Text('Explorer le marché', fontWeight: FontWeight.bold),
+              child: const Text('Explorer le marché', style: TextStyle(fontWeight: FontWeight.bold)),
             ),
           ),
         ],
