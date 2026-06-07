@@ -11,6 +11,7 @@ import 'package:thix_id/l10n/locale_controller.dart';
 import 'package:thix_id/nav.dart';
 import 'package:thix_id/supabase/supabase_config.dart';
 import 'package:thix_id/theme.dart';
+import 'package:thix_id/services/cart_service.dart'; // ✅ AJOUT
 
 /// Main entry point for the application
 ///
@@ -86,8 +87,6 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
     _localeController = LocaleController()..init();
-    // Ensure go_router refreshes when locale changes so every page rebuilds
-    // consistently (especially for route shells and cached pages).
     _router = AppRouter.create(widget.auth, extraRefreshListenable: _localeController);
   }
 
@@ -97,6 +96,7 @@ class _MyAppState extends State<MyApp> {
       providers: [
         ChangeNotifierProvider.value(value: widget.auth),
         ChangeNotifierProvider.value(value: _localeController),
+        ChangeNotifierProvider(create: (_) => CartService()), // ✅ AJOUT
       ],
       child: Builder(
         builder: (context) {
