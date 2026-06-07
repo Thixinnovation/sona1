@@ -1,12 +1,21 @@
 import 'package:flutter/material.dart';
 import '../../../models/product.dart';
 import 'rating_stars.dart';
+import 'product_location.dart';
 
 class ProductCard extends StatelessWidget {
   final Product product;
   final VoidCallback? onTap;
+  final bool showLocation;
+  final bool showStock;
 
-  const ProductCard({super.key, required this.product, this.onTap});
+  const ProductCard({
+    super.key,
+    required this.product,
+    this.onTap,
+    this.showLocation = true,
+    this.showStock = true,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -21,6 +30,7 @@ class ProductCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Image
             Stack(
               children: [
                 ClipRRect(
@@ -46,7 +56,7 @@ class ProductCard extends StatelessWidget {
                         style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
                     ),
                   ),
-                if (!product.inStock)
+                if (showStock && !product.inStock)
                   Positioned.fill(
                     child: Container(
                       color: Colors.black.withOpacity(0.5),
@@ -71,6 +81,10 @@ class ProductCard extends StatelessWidget {
                       style: TextStyle(fontSize: 10, color: Colors.grey.shade500, decoration: TextDecoration.lineThrough)),
                   Text(product.formattedPrice,
                     style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFFD4AF37))),
+                  if (showLocation) ...[
+                    const SizedBox(height: 4),
+                    ProductLocation(city: product.city, country: product.country),
+                  ],
                 ],
               ),
             ),
