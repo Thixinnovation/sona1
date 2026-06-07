@@ -1,4 +1,3 @@
-// lib/presentation/thix_market/chat/seller_chat_page.dart
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../services/market/market_chat_service.dart';
