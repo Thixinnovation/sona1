@@ -7,8 +7,7 @@ import '../../../services/cart_service.dart';
 import '../../../models/product.dart';
 import 'product_detail_page.dart';
 import 'widgets/products_grid.dart';
-import 'widgets/rating_stars.dart';
-import 'widgets/product_card.dart'; // ✅ AJOUT IMPORT
+import 'widgets/product_card.dart';
 
 class ThixMarketPage extends StatefulWidget {
   const ThixMarketPage({super.key});
@@ -37,6 +36,12 @@ class _ThixMarketPageState extends State<ThixMarketPage> {
     _loadData();
   }
 
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
   Future<void> _loadData() async {
     setState(() => _loading = true);
     try {
@@ -48,6 +53,7 @@ class _ThixMarketPageState extends State<ThixMarketPage> {
         _filteredProducts = all;
       });
     } catch (e) {
+      debugPrint('Error loading market data: $e');
       _loadDemoData();
     } finally {
       setState(() => _loading = false);
@@ -57,24 +63,32 @@ class _ThixMarketPageState extends State<ThixMarketPage> {
   void _loadDemoData() {
     _flashSales = [
       Product(
-        id: '1', title: 'Écouteurs sans fil Premium Pro', description: '', price: 32900, oldPrice: 47000,
+        id: '1', title: 'Écouteurs sans fil Premium Pro', description: 'Qualité sonore exceptionnelle', price: 32900, oldPrice: 47000,
         category: 'Électronique', imageUrl: 'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=300&h=300&fit=crop',
         rating: 4.8, reviewsCount: 124, seller: 'THIX Store', inStock: true, isFlashSale: true, flashDiscount: 30,
       ),
       Product(
-        id: '2', title: 'Montre Connectée THIX Watch 5', description: '', price: 75000, oldPrice: 100000,
+        id: '2', title: 'Montre Connectée THIX Watch 5', description: 'Suivi sportif et santé', price: 75000, oldPrice: 100000,
         category: 'Électronique', imageUrl: 'https://images.unsplash.com/photo-1546868871-7041f2a55e12?w=300&h=300&fit=crop',
         rating: 4.9, reviewsCount: 89, seller: 'THIX Tech', inStock: true, isFlashSale: true, flashDiscount: 25,
       ),
       Product(
-        id: '3', title: 'Sneakers Air N Édition Limitée', description: '', price: 56000, oldPrice: 70000,
+        id: '3', title: 'Sneakers Air N Édition Limitée', description: 'Confort et style', price: 56000, oldPrice: 70000,
         category: 'Mode & Fashion', imageUrl: 'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=300&h=300&fit=crop',
         rating: 4.7, reviewsCount: 63, seller: 'THIX Fashion', inStock: true, isFlashSale: true, flashDiscount: 20,
       ),
     ];
-    _allProducts = [..._flashSales,
-      Product(id: '4', title: 'iPhone 15 Pro', description: '', price: 1250000, oldPrice: null, category: 'Électronique', imageUrl: 'https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=300&h=300&fit=crop', rating: 4.9, reviewsCount: 450, seller: 'Apple Store', inStock: true),
-      Product(id: '5', title: 'Casque Audio Bluetooth', description: '', price: 45000, oldPrice: 65000, category: 'Électronique', imageUrl: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=300&h=300&fit=crop', rating: 4.6, reviewsCount: 230, seller: 'Sony', inStock: true),
+    _allProducts = [
+      ..._flashSales,
+      Product(id: '4', title: 'iPhone 15 Pro', description: 'Le dernier smartphone Apple', price: 1250000, oldPrice: null, 
+        category: 'Électronique', imageUrl: 'https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=300&h=300&fit=crop', 
+        rating: 4.9, reviewsCount: 450, seller: 'Apple Store', inStock: true),
+      Product(id: '5', title: 'Casque Audio Bluetooth', description: 'Son haute fidélité', price: 45000, oldPrice: 65000, 
+        category: 'Électronique', imageUrl: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=300&h=300&fit=crop', 
+        rating: 4.6, reviewsCount: 230, seller: 'Sony', inStock: true),
+      Product(id: '6', title: 'Sac à main Cuir', description: 'Collection luxe', price: 89000, oldPrice: 120000, 
+        category: 'Mode & Fashion', imageUrl: 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=300&h=300&fit=crop', 
+        rating: 4.8, reviewsCount: 178, seller: 'Luxury Bags', inStock: true),
     ];
     _filteredProducts = _allProducts;
   }
@@ -106,6 +120,8 @@ class _ThixMarketPageState extends State<ThixMarketPage> {
   @override
   Widget build(BuildContext context) {
     final cartService = Provider.of<CartService>(context);
+    final auth = Provider.of<AuthController>(context);
+    final userName = auth.currentUser?.displayName ?? 'Invité';
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
@@ -143,7 +159,7 @@ class _ThixMarketPageState extends State<ThixMarketPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildHeader(),
+              _buildHeader(userName),
               const SizedBox(height: 20),
               _buildFeatures(),
               const SizedBox(height: 20),
@@ -156,8 +172,10 @@ class _ThixMarketPageState extends State<ThixMarketPage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(_selectedCategory == 'Tous' ? 'Tous les produits' : 'Produits - $_selectedCategory',
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  Text(
+                    _selectedCategory == 'Tous' ? 'Tous les produits' : 'Produits - $_selectedCategory',
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
                 ],
               ),
               const SizedBox(height: 12),
@@ -177,7 +195,7 @@ class _ThixMarketPageState extends State<ThixMarketPage> {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(String userName) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -186,9 +204,15 @@ class _ThixMarketPageState extends State<ThixMarketPage> {
       ),
       child: Column(
         children: [
-          const Text('Bonjour, Michel 🎉', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+          Text(
+            'Bonjour, $userName 🎉',
+            style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 4),
-          const Text('Votre marketplace premium et sécurisée', style: TextStyle(color: Colors.white70, fontSize: 12)),
+          const Text(
+            'Votre marketplace premium et sécurisée',
+            style: TextStyle(color: Colors.white70, fontSize: 12),
+          ),
           const SizedBox(height: 12),
           SizedBox(
             width: double.infinity,
@@ -261,7 +285,10 @@ class _ThixMarketPageState extends State<ThixMarketPage> {
               onSelected: (_) => _filterByCategory(cat),
               backgroundColor: Colors.white,
               selectedColor: const Color(0xFFD4AF37),
-              labelStyle: TextStyle(color: _selectedCategory == cat ? const Color(0xFF0B1B3D) : Colors.grey.shade700),
+              labelStyle: TextStyle(
+                color: _selectedCategory == cat ? const Color(0xFF0B1B3D) : Colors.grey.shade700,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           );
         },
@@ -289,7 +316,7 @@ class _ThixMarketPageState extends State<ThixMarketPage> {
               width: 150,
               child: Padding(
                 padding: const EdgeInsets.only(right: 12),
-                child: ProductCard( // ✅ UTILISATION CORRECTE
+                child: ProductCard(
                   product: _flashSales[index],
                   onTap: () => _showProductDetail(context, _flashSales[index]),
                 ),
