@@ -1,6 +1,4 @@
-// lib/models/market/market_chat.dart
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 class MarketConversation {
   final String id;
@@ -35,22 +33,24 @@ class MarketConversation {
     this.isActive = true,
   });
 
-  factory MarketConversation.fromJson(Map<String, dynamic> json) => MarketConversation(
-    id: json['id'].toString(),
-    productId: json['product_id'],
-    productTitle: json['product_title'],
-    productImage: json['product_image'] ?? '',
-    buyerId: json['buyer_id'],
-    buyerName: json['buyer_name'],
-    buyerAvatar: json['buyer_avatar'] ?? '',
-    sellerId: json['seller_id'],
-    sellerName: json['seller_name'],
-    sellerAvatar: json['seller_avatar'] ?? '',
-    lastMessage: json['last_message'] ?? '',
-    lastMessageAt: DateTime.parse(json['last_message_at']),
-    unreadCount: json['unread_count'] ?? 0,
-    isActive: json['is_active'] ?? true,
-  );
+  factory MarketConversation.fromJson(Map<String, dynamic> json) {
+    return MarketConversation(
+      id: json['id'].toString(),
+      productId: json['product_id'],
+      productTitle: json['product_title'],
+      productImage: json['product_image'] ?? '',
+      buyerId: json['buyer_id'],
+      buyerName: json['buyer_name'],
+      buyerAvatar: json['buyer_avatar'] ?? '',
+      sellerId: json['seller_id'],
+      sellerName: json['seller_name'],
+      sellerAvatar: json['seller_avatar'] ?? '',
+      lastMessage: json['last_message'] ?? '',
+      lastMessageAt: DateTime.parse(json['last_message_at']),
+      unreadCount: json['unread_count'] ?? 0,
+      isActive: json['is_active'] ?? true,
+    );
+  }
 }
 
 class MarketMessage {
@@ -76,17 +76,19 @@ class MarketMessage {
     this.imageUrl,
   });
 
-  factory MarketMessage.fromJson(Map<String, dynamic> json) => MarketMessage(
-    id: json['id'].toString(),
-    conversationId: json['conversation_id'],
-    senderId: json['sender_id'],
-    senderName: json['sender_name'],
-    senderAvatar: json['sender_avatar'] ?? '',
-    message: json['message'],
-    timestamp: DateTime.parse(json['created_at']),
-    isRead: json['is_read'] ?? false,
-    imageUrl: json['image_url'],
-  );
+  factory MarketMessage.fromJson(Map<String, dynamic> json) {
+    return MarketMessage(
+      id: json['id'].toString(),
+      conversationId: json['conversation_id'],
+      senderId: json['sender_id'],
+      senderName: json['sender_name'],
+      senderAvatar: json['sender_avatar'] ?? '',
+      message: json['message'],
+      timestamp: DateTime.parse(json['created_at']),
+      isRead: json['is_read'] ?? false,
+      imageUrl: json['image_url'],
+    );
+  }
 
   bool isMine(String currentUserId) => senderId == currentUserId;
 }
