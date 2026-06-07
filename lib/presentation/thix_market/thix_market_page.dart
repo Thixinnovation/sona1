@@ -9,6 +9,9 @@ import 'product_detail_page.dart';
 import 'widgets/products_grid.dart';
 import 'package:thix_id/auth/auth_controller.dart';
 import 'widgets/product_card.dart';
+import 'package:thix_id/presentation/common/banner_carousel.dart';
+import 'package:thix_id/services/banner_service.dart';
+import 'package:thix_id/models/banner.dart';
 
 class ThixMarketPage extends StatefulWidget {
   const ThixMarketPage({super.key});
@@ -19,9 +22,11 @@ class ThixMarketPage extends StatefulWidget {
 
 class _ThixMarketPageState extends State<ThixMarketPage> {
   late MarketService _marketService;
+  late BannerService _bannerService;
   List<Product> _flashSales = [];
   List<Product> _allProducts = [];
   List<Product> _filteredProducts = [];
+  List<BannerAd> _banners = [];
   bool _loading = true;
   String _selectedCategory = 'Tous';
   final TextEditingController _searchController = TextEditingController();
@@ -44,7 +49,9 @@ class _ThixMarketPageState extends State<ThixMarketPage> {
   void initState() {
     super.initState();
     _marketService = MarketService(Supabase.instance.client);
+    _bannerService = BannerService(Supabase.instance.client);
     _loadData();
+    _loadBanners();
   }
 
   @override
@@ -53,10 +60,18 @@ class _ThixMarketPageState extends State<ThixMarketPage> {
     super.dispose();
   }
 
+  Future<void> _loadBanners() async {
+    try {
+      final banners = await _bannerService.getActiveBanners();
+      setState(() => _banners = banners);
+    } catch (e) {
+      debugPrint('Error loading banners: $e');
+    }
+  }
+
   Future<void> _loadData() async {
     setState(() => _loading = true);
     try {
-      // Charger depuis Supabase uniquement
       final flash = await _marketService.getFlashSales();
       final all = await _marketService.getFeaturedProducts();
       setState(() {
@@ -77,22 +92,13 @@ class _ThixMarketPageState extends State<ThixMarketPage> {
   void _applyFiltersAndSort() {
     setState(() {
       var filtered = _allProducts.where((p) {
-        // Filtre catégorie
         if (_selectedCategory != 'Tous' && p.category != _selectedCategory) return false;
-        
-        // Filtre prix
         if (p.price < _priceRange.start || p.price > _priceRange.end) return false;
-        
-        // Filtre note
         if (p.rating < _minRating) return false;
-        
-        // Filtre ville
         if (_selectedCity != 'Toutes' && p.city != _selectedCity) return false;
-        
         return true;
       }).toList();
       
-      // Tri
       switch (_sortBy) {
         case 'price_asc':
           filtered.sort((a, b) => a.price.compareTo(b.price));
@@ -152,7 +158,6 @@ class _ThixMarketPageState extends State<ThixMarketPage> {
                 const Text('Filtres', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 16),
                 
-                // Prix
                 const Text('Prix (CDF)', style: TextStyle(fontWeight: FontWeight.bold)),
                 RangeSlider(
                   values: _priceRange,
@@ -167,7 +172,6 @@ class _ThixMarketPageState extends State<ThixMarketPage> {
                 ),
                 const SizedBox(height: 16),
                 
-                // Note
                 const Text('Note minimum', style: TextStyle(fontWeight: FontWeight.bold)),
                 Slider(
                   value: _minRating,
@@ -179,7 +183,6 @@ class _ThixMarketPageState extends State<ThixMarketPage> {
                 ),
                 const SizedBox(height: 16),
                 
-                // Ville
                 const Text('Ville', style: TextStyle(fontWeight: FontWeight.bold)),
                 const SizedBox(height: 8),
                 Wrap(
@@ -193,7 +196,6 @@ class _ThixMarketPageState extends State<ThixMarketPage> {
                 ),
                 const SizedBox(height: 16),
                 
-                // Tri
                 const Text('Trier par', style: TextStyle(fontWeight: FontWeight.bold)),
                 const SizedBox(height: 8),
                 Wrap(
@@ -303,6 +305,13 @@ class _ThixMarketPageState extends State<ThixMarketPage> {
             children: [
               _buildHeader(userName),
               const SizedBox(height: 20),
+              
+              // BANNIÈRES
+              if (_banners.isNotEmpty) ...[
+                BannerCarousel(banners: _banners),
+                const SizedBox(height: 20),
+              ],
+              
               _buildFeatures(),
               const SizedBox(height: 20),
               _buildSearchBar(),
