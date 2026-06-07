@@ -7,6 +7,7 @@ import '../../../services/market/market_chat_service.dart';
 import 'widgets/quantity_selector.dart';
 import 'widgets/rating_stars.dart';
 import 'widgets/product_location.dart';
+import '../chat/seller_chat_page.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ProductDetailPage extends StatefulWidget {
