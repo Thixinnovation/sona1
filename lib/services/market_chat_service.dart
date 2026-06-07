@@ -7,7 +7,6 @@ class MarketChatService {
 
   MarketChatService(this._supabase);
 
-  // Créer ou récupérer une conversation
   Future<MarketConversation> getOrCreateConversation({
     required String productId,
     required String productTitle,
@@ -19,7 +18,6 @@ class MarketChatService {
     required String buyerName,
     required String buyerAvatar,
   }) async {
-    // Vérifier si une conversation existe déjà
     final existing = await _supabase
         .from('market_conversations')
         .select('*')
@@ -32,7 +30,6 @@ class MarketChatService {
       return MarketConversation.fromJson(existing);
     }
 
-    // Créer une nouvelle conversation
     final newConversation = {
       'product_id': productId,
       'product_title': productTitle,
@@ -56,7 +53,6 @@ class MarketChatService {
     return MarketConversation.fromJson((response as List).first);
   }
 
-  // Envoyer un message
   Future<MarketMessage> sendMessage({
     required String conversationId,
     required String senderId,
@@ -83,7 +79,6 @@ class MarketChatService {
     
     final sentMessage = MarketMessage.fromJson((response as List).first);
 
-    // Mettre à jour la dernière message de la conversation
     await _supabase
         .from('market_conversations')
         .update({
@@ -95,7 +90,6 @@ class MarketChatService {
     return sentMessage;
   }
 
-  // Marquer les messages comme lus
   Future<void> markAsRead(String conversationId, String userId) async {
     await _supabase
         .from('market_messages')
@@ -104,7 +98,6 @@ class MarketChatService {
         .neq('sender_id', userId);
   }
 
-  // Stream des messages d'une conversation
   Stream<List<MarketMessage>> getMessages(String conversationId) {
     return _supabase
         .from('market_messages')
@@ -114,23 +107,21 @@ class MarketChatService {
         .map((list) => list.map((e) => MarketMessage.fromJson(e)).toList());
   }
 
-  // Stream des conversations d'un utilisateur
   Stream<List<MarketConversation>> getUserConversations(String userId) {
     return _supabase
         .from('market_conversations')
         .stream(primaryKey: ['id'])
-        .or('buyer_id.eq.$userId,seller_id.eq.$userId')
+        .eq('buyer_id', userId)
         .eq('is_active', true)
         .order('last_message_at', ascending: false)
         .map((list) => list.map((e) => MarketConversation.fromJson(e)).toList());
   }
 
-  // Obtenir le nombre de messages non lus
   Future<int> getUnreadCount(String userId) async {
     final conversations = await _supabase
         .from('market_conversations')
         .select('id')
-        .or('buyer_id.eq.$userId,seller_id.eq.$userId');
+        .eq('buyer_id', userId);
     
     int totalUnread = 0;
     for (final conv in conversations) {
@@ -145,7 +136,6 @@ class MarketChatService {
     return totalUnread;
   }
 
-  // Supprimer une conversation
   Future<void> deleteConversation(String conversationId) async {
     await _supabase
         .from('market_conversations')
