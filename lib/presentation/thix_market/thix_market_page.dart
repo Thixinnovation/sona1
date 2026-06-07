@@ -7,6 +7,7 @@ import '../../../services/cart_service.dart';
 import '../../../models/product.dart';
 import 'product_detail_page.dart';
 import 'widgets/products_grid.dart';
+import 'package:thix_id/auth/auth_controller.dart';
 import 'widgets/product_card.dart';
 
 class ThixMarketPage extends StatefulWidget {
