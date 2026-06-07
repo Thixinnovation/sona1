@@ -9,9 +9,15 @@ class Product {
   final double rating;
   final int reviewsCount;
   final String seller;
+  final String sellerId;
+  final String sellerAvatar;
+  final int stock;
+  final String city;
+  final String country;
   final bool inStock;
   final bool isFlashSale;
   final int? flashDiscount;
+  final DateTime createdAt;
 
   Product({
     required this.id,
@@ -24,9 +30,15 @@ class Product {
     required this.rating,
     required this.reviewsCount,
     required this.seller,
+    required this.sellerId,
+    required this.sellerAvatar,
+    required this.stock,
+    required this.city,
+    required this.country,
     required this.inStock,
     this.isFlashSale = false,
     this.flashDiscount,
+    required this.createdAt,
   });
 
   factory Product.fromJson(Map<String, dynamic> json) => Product(
@@ -40,28 +52,19 @@ class Product {
     rating: (json['rating'] as num?)?.toDouble() ?? 0,
     reviewsCount: json['reviews_count'] as int? ?? 0,
     seller: json['seller'] as String,
-    inStock: json['in_stock'] as bool? ?? true,
+    sellerId: json['seller_id'] as String? ?? '',
+    sellerAvatar: json['seller_avatar'] as String? ?? '',
+    stock: json['stock'] as int? ?? 0,
+    city: json['city'] as String? ?? 'En ligne',
+    country: json['country'] as String? ?? 'Sénégal',
+    inStock: (json['stock'] as int? ?? 0) > 0,
     isFlashSale: json['is_flash_sale'] as bool? ?? false,
     flashDiscount: json['flash_discount'] as int?,
+    createdAt: DateTime.tryParse(json['created_at'] ?? '') ?? DateTime.now(),
   );
-
-  Map<String, dynamic> toJson() => {
-    'id': id,
-    'title': title,
-    'description': description,
-    'price': price,
-    'old_price': oldPrice,
-    'category': category,
-    'image_url': imageUrl,
-    'rating': rating,
-    'reviews_count': reviewsCount,
-    'seller': seller,
-    'in_stock': inStock,
-    'is_flash_sale': isFlashSale,
-    'flash_discount': flashDiscount,
-  };
 
   String get formattedPrice => '${price.toStringAsFixed(0)} FCFA';
   String get formattedOldPrice => oldPrice != null ? '${oldPrice!.toStringAsFixed(0)} FCFA' : '';
   double get discountPercent => oldPrice != null ? ((oldPrice! - price) / oldPrice! * 100).roundToDouble() : 0;
+  String get location => city == 'En ligne' ? '📦 Livraison partout' : '📍 $city, $country';
 }
