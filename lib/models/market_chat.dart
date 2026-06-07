@@ -1,5 +1,6 @@
 // lib/models/market/market_chat.dart
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class MarketConversation {
   final String id;
@@ -87,7 +88,5 @@ class MarketMessage {
     imageUrl: json['image_url'],
   );
 
-  bool get isMine => senderId == currentUserId;
+  bool isMine(String currentUserId) => senderId == currentUserId;
 }
-
-String get currentUserId => Supabase.instance.client.auth.currentUser?.id ?? '';
