@@ -8,6 +8,7 @@ import '../../../models/product.dart';
 import 'product_detail_page.dart';
 import 'widgets/products_grid.dart';
 import 'widgets/rating_stars.dart';
+import 'widgets/product_card.dart'; // ✅ AJOUT IMPORT
 
 class ThixMarketPage extends StatefulWidget {
   const ThixMarketPage({super.key});
@@ -288,9 +289,9 @@ class _ThixMarketPageState extends State<ThixMarketPage> {
               width: 150,
               child: Padding(
                 padding: const EdgeInsets.only(right: 12),
-                child: GestureDetector(
+                child: ProductCard( // ✅ UTILISATION CORRECTE
+                  product: _flashSales[index],
                   onTap: () => _showProductDetail(context, _flashSales[index]),
-                  child: ProductCard(product: _flashSales[index]),
                 ),
               ),
             ),
