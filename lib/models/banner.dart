@@ -1,4 +1,5 @@
-// lib/models/banner.dart
+import 'package:flutter/material.dart';
+
 class BannerAd {
   final String id;
   final String title;
@@ -24,10 +25,10 @@ class BannerAd {
     id: json['id'].toString(),
     title: json['title'],
     subtitle: json['subtitle'],
-    imageUrl: json['image_url'],
-    buttonText: json['button_text'],
+    imageUrl: json['image_url'] ?? '',
+    buttonText: json['button_text'] ?? 'Découvrir',
     buttonLink: json['button_link'],
-    backgroundColor: Color(json['background_color']),
-    textColor: Color(json['text_color']),
+    backgroundColor: Color(json['background_color'] ?? 0xFF0B1B3D),
+    textColor: Color(json['text_color'] ?? 0xFFFFFFFF),
   );
 }
