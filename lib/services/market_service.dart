@@ -1,90 +1,144 @@
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../models/product.dart';
+import '../models/market_chat.dart';
 
-class MarketService {
+class MarketChatService {
   final SupabaseClient _supabase;
 
-  MarketService(this._supabase);
+  MarketChatService(this._supabase);
 
-  Future<List<Product>> getFlashSales() async {
-    try {
-      final response = await _supabase
-          .from('market_products')
-          .select('*')
-          .eq('is_flash_sale', true)
-          .eq('in_stock', true)
-          .order('created_at', ascending: false)
-          .limit(6);
-      return (response as List).map((e) => Product.fromJson(e)).toList();
-    } catch (e) {
-      if (kDebugMode) print('Error getFlashSales: $e');
-      return [];
+  Future<MarketConversation> getOrCreateConversation({
+    required String productId,
+    required String productTitle,
+    required String productImage,
+    required String sellerId,
+    required String sellerName,
+    required String sellerAvatar,
+    required String buyerId,
+    required String buyerName,
+    required String buyerAvatar,
+  }) async {
+    final existing = await _supabase
+        .from('market_conversations')
+        .select('*')
+        .eq('product_id', productId)
+        .eq('buyer_id', buyerId)
+        .eq('seller_id', sellerId)
+        .maybeSingle();
+
+    if (existing != null) {
+      return MarketConversation.fromJson(existing);
     }
+
+    final newConversation = {
+      'product_id': productId,
+      'product_title': productTitle,
+      'product_image': productImage,
+      'buyer_id': buyerId,
+      'buyer_name': buyerName,
+      'buyer_avatar': buyerAvatar,
+      'seller_id': sellerId,
+      'seller_name': sellerName,
+      'seller_avatar': sellerAvatar,
+      'last_message': 'Début de la conversation',
+      'last_message_at': DateTime.now().toIso8601String(),
+      'is_active': true,
+    };
+
+    final response = await _supabase
+        .from('market_conversations')
+        .insert(newConversation)
+        .select();
+    
+    return MarketConversation.fromJson((response as List).first);
   }
 
-  Future<List<Product>> getFeaturedProducts() async {
-    try {
-      final response = await _supabase
-          .from('market_products')
-          .select('*')
-          .eq('is_featured', true)
-          .eq('in_stock', true)
-          .order('created_at', ascending: false)
-          .limit(20);
-      return (response as List).map((e) => Product.fromJson(e)).toList();
-    } catch (e) {
-      if (kDebugMode) print('Error getFeaturedProducts: $e');
-      return [];
-    }
+  Future<MarketMessage> sendMessage({
+    required String conversationId,
+    required String senderId,
+    required String senderName,
+    required String senderAvatar,
+    required String message,
+    String? imageUrl,
+  }) async {
+    final newMessage = {
+      'conversation_id': conversationId,
+      'sender_id': senderId,
+      'sender_name': senderName,
+      'sender_avatar': senderAvatar,
+      'message': message,
+      'image_url': imageUrl,
+      'is_read': false,
+      'created_at': DateTime.now().toIso8601String(),
+    };
+
+    final response = await _supabase
+        .from('market_messages')
+        .insert(newMessage)
+        .select();
+    
+    final sentMessage = MarketMessage.fromJson((response as List).first);
+
+    await _supabase
+        .from('market_conversations')
+        .update({
+          'last_message': message,
+          'last_message_at': DateTime.now().toIso8601String(),
+        })
+        .eq('id', conversationId);
+
+    return sentMessage;
   }
 
-  Future<List<Product>> getProductsByCategory(String category, {int limit = 20}) async {
+  Future<void> markAsRead(String conversationId, String userId) async {
+    await _supabase
+        .from('market_messages')
+        .update({'is_read': true})
+        .eq('conversation_id', conversationId)
+        .neq('sender_id', userId);
+  }
+
+  Stream<List<MarketMessage>> getMessages(String conversationId) {
+    return _supabase
+        .from('market_messages')
+        .stream(primaryKey: ['id'])
+        .eq('conversation_id', conversationId)
+        .order('created_at', ascending: true)
+        .map((list) => list.map((e) => MarketMessage.fromJson(e)).toList());
+  }
+
+  Future<List<MarketConversation>> getUserConversations(String userId) async {
+    final response = await _supabase
+        .from('market_conversations')
+        .select('*')
+        .eq('buyer_id', userId)
+        .eq('is_active', true)
+        .order('last_message_at', ascending: false);
+    
+    return (response as List).map((e) => MarketConversation.fromJson(e)).toList();
+  }
+
+  // ✅ MÉTHODE CORRIGÉE - Version définitive sans count
+  Future<int> getUnreadCount(String userId) async {
     try {
-      var query = _supabase
-          .from('market_products')
-          .select('*')
-          .eq('in_stock', true);
+      final response = await _supabase
+          .from('market_messages')
+          .select('id')
+          .eq('is_read', false)
+          .neq('sender_id', userId);
       
-      if (category != 'Tous') {
-        query = query.eq('category', category);
-      }
-      
-      final response = await query.order('created_at', ascending: false).limit(limit);
-      return (response as List).map((e) => Product.fromJson(e)).toList();
+      // (response as List).length retourne un int, pas un double
+      return (response as List).length;
     } catch (e) {
-      if (kDebugMode) print('Error getProductsByCategory: $e');
-      return [];
+      if (kDebugMode) print('Error getUnreadCount: $e');
+      return 0;
     }
   }
 
-  Future<List<Product>> searchProducts(String query) async {
-    if (query.isEmpty) return [];
-    try {
-      final response = await _supabase
-          .from('market_products')
-          .select('*')
-          .ilike('title', '%$query%')
-          .eq('in_stock', true)
-          .limit(30);
-      return (response as List).map((e) => Product.fromJson(e)).toList();
-    } catch (e) {
-      if (kDebugMode) print('Error searchProducts: $e');
-      return [];
-    }
-  }
-
-  Future<Product?> getProductById(String id) async {
-    try {
-      final response = await _supabase
-          .from('market_products')
-          .select('*')
-          .eq('id', id)
-          .maybeSingle();
-      return response != null ? Product.fromJson(response) : null;
-    } catch (e) {
-      if (kDebugMode) print('Error getProductById: $e');
-      return null;
-    }
+  Future<void> deleteConversation(String conversationId) async {
+    await _supabase
+        .from('market_conversations')
+        .update({'is_active': false})
+        .eq('id', conversationId);
   }
 }
