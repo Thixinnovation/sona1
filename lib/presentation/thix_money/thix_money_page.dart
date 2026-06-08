@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class ThixMoneyPage extends StatefulWidget {
   const ThixMoneyPage({super.key});
@@ -35,22 +34,22 @@ class _ThixMoneyPageState extends State<ThixMoneyPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           RichText(
-                            text: TextSpan(
+                            text: const TextSpan(
                               children: [
                                 TextSpan(
                                   text: 'THIX ',
-                                  style: GoogleFonts.poppins(
+                                  style: TextStyle(
                                     fontSize: 20,
                                     fontWeight: FontWeight.w800,
-                                    color: const Color(0xFF111827),
+                                    color: Color(0xFF111827),
                                   ),
                                 ),
                                 TextSpan(
                                   text: 'MONEY',
-                                  style: GoogleFonts.poppins(
+                                  style: TextStyle(
                                     fontSize: 20,
                                     fontWeight: FontWeight.w800,
-                                    color: const Color(0xFF2563FF),
+                                    color: Color(0xFF2563FF),
                                   ),
                                 ),
                               ],
@@ -103,7 +102,7 @@ class _ThixMoneyPageState extends State<ThixMoneyPage> {
                       const SizedBox(height: 4),
                       Text(
                         '1.250.000 FC',
-                        style: GoogleFonts.poppins(
+                        style: const TextStyle(
                           fontSize: 28,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
