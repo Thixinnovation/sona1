@@ -1,225 +1,143 @@
-import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../models/media_content.dart';
+import '../models/market_chat.dart';
 
-class MediaService {
+class MarketChatService {
   final SupabaseClient _supabase;
 
-  MediaService(this._supabase);
+  MarketChatService(this._supabase);
 
-  // ==================== MÉTHODES PUBLIQUES (page THIX MEDIA) ====================
-
-  Future<List<MediaContent>> fetchPublishedMedia() async {
-    final response = await _supabase
-        .from('media_contents')
+  Future<MarketConversation> getOrCreateConversation({
+    required String productId,
+    required String productTitle,
+    required String productImage,
+    required String sellerId,
+    required String sellerName,
+    required String sellerAvatar,
+    required String buyerId,
+    required String buyerName,
+    required String buyerAvatar,
+  }) async {
+    final existing = await _supabase
+        .from('market_conversations')
         .select('*')
-        .eq('is_published', true)
-        .order('created_at', ascending: false);
-    if (response is List) {
-      return response.map((json) => MediaContent.fromJson(json)).toList();
-    }
-    return [];
-  }
-
-  Future<List<MediaContent>> fetchTrending() async {
-    final response = await _supabase
-        .from('media_contents')
-        .select('*')
-        .eq('is_published', true)
-        .eq('is_trending', true)
-        .order('rank_position', ascending: true);
-    if (response is List) {
-      return response.map((json) => MediaContent.fromJson(json)).toList();
-    }
-    return [];
-  }
-
-  Future<List<MediaContent>> fetchNewReleases() async {
-    final response = await _supabase
-        .from('media_contents')
-        .select('*')
-        .eq('is_published', true)
-        .eq('is_new_release', true)
-        .order('created_at', ascending: false);
-    if (response is List) {
-      return response.map((json) => MediaContent.fromJson(json)).toList();
-    }
-    return [];
-  }
-
-  Future<List<MediaContent>> fetchRecommendations() async {
-    final response = await _supabase
-        .from('media_contents')
-        .select('*')
-        .eq('is_published', true)
-        .eq('is_recommended', true)
-        .order('created_at', ascending: false);
-    if (response is List) {
-      return response.map((json) => MediaContent.fromJson(json)).toList();
-    }
-    return [];
-  }
-
-  Future<MediaContent?> fetchById(String id) async {
-    final response = await _supabase
-        .from('media_contents')
-        .select('*')
-        .eq('id', id)
+        .eq('product_id', productId)
+        .eq('buyer_id', buyerId)
+        .eq('seller_id', sellerId)
         .maybeSingle();
-    if (response != null) {
-      return MediaContent.fromJson(response);
+
+    if (existing != null) {
+      return MarketConversation.fromJson(existing);
     }
-    return null;
-  }
 
-  // ==================== MÉTHODES D'ADMINISTRATION ====================
+    final newConversation = {
+      'product_id': productId,
+      'product_title': productTitle,
+      'product_image': productImage,
+      'buyer_id': buyerId,
+      'buyer_name': buyerName,
+      'buyer_avatar': buyerAvatar,
+      'seller_id': sellerId,
+      'seller_name': sellerName,
+      'seller_avatar': sellerAvatar,
+      'last_message': 'Début de la conversation',
+      'last_message_at': DateTime.now().toIso8601String(),
+      'is_active': true,
+    };
 
-  Future<List<MediaContent>> fetchAllMedia() async {
     final response = await _supabase
-        .from('media_contents')
-        .select('*')
-        .order('created_at', ascending: false);
-    if (response is List) {
-      return response.map((json) => MediaContent.fromJson(json)).toList();
-    }
-    return [];
-  }
-
-  Future<void> insert(MediaContent item) async {
-    final json = item.toJson();
-    json.remove('id');
-    print('📝 Insertion média: ${json['title']}');
-    await _supabase.from('media_contents').insert(json);
-    print('✅ Média inséré avec succès');
-  }
-
-  Future<void> update(MediaContent item) async {
-    print('📝 Mise à jour média: ${item.title}');
-    await _supabase.from('media_contents').update(item.toJson()).eq('id', item.id);
-    print('✅ Média mis à jour');
-  }
-
-  // Insertion avec upload de fichiers (image + vidéo)
-  Future<void> insertWithFiles(MediaContent item, {File? coverFile, File? videoFile}) async {
-    print('🎬 Début insertion avec fichiers');
-    String? coverUrl = item.coverUrl;
-    String? videoUrl = item.videoUrl;
-
-    if (coverFile != null) {
-      print('📸 Upload cover...');
-      final coverExt = coverFile.path.split('.').last;
-      final coverName = 'covers/${DateTime.now().millisecondsSinceEpoch}.$coverExt';
-      await _uploadFile('media_covers', coverFile, coverName);
-      coverUrl = _supabase.storage.from('media_covers').getPublicUrl(coverName);
-      print('✅ Cover uploadée: $coverUrl');
-    }
+        .from('market_conversations')
+        .insert(newConversation)
+        .select();
     
-    if (videoFile != null) {
-      print('🎬 Upload vidéo...');
-      final videoExt = videoFile.path.split('.').last;
-      final videoName = 'videos/${DateTime.now().millisecondsSinceEpoch}.$videoExt';
-      await _uploadFile('media_videos', videoFile, videoName);
-      videoUrl = _supabase.storage.from('media_videos').getPublicUrl(videoName);
-      print('✅ Vidéo uploadée: $videoUrl');
-    }
-
-    final newItem = item.copyWith(
-      coverUrl: coverUrl!,
-      videoUrl: videoUrl!,
-    );
-    await insert(newItem);
-    print('🎉 Insertion terminée avec succès!');
+    return MarketConversation.fromJson((response as List).first);
   }
 
-  // Mise à jour avec possibilité de remplacer l'image ou la vidéo
-  Future<void> updateWithFiles(MediaContent item, {File? newCoverFile, File? newVideoFile}) async {
-    String? coverUrl = item.coverUrl;
-    String? videoUrl = item.videoUrl;
+  Future<MarketMessage> sendMessage({
+    required String conversationId,
+    required String senderId,
+    required String senderName,
+    required String senderAvatar,
+    required String message,
+    String? imageUrl,
+  }) async {
+    final newMessage = {
+      'conversation_id': conversationId,
+      'sender_id': senderId,
+      'sender_name': senderName,
+      'sender_avatar': senderAvatar,
+      'message': message,
+      'image_url': imageUrl,
+      'is_read': false,
+      'created_at': DateTime.now().toIso8601String(),
+    };
 
-    if (newCoverFile != null) {
-      if (item.coverUrl.contains('supabase.co')) {
-        final oldPath = _extractStoragePath(item.coverUrl);
-        if (oldPath != null) {
-          await _supabase.storage.from('media_covers').remove([oldPath]);
-        }
-      }
-      final coverExt = newCoverFile.path.split('.').last;
-      final coverName = 'covers/${DateTime.now().millisecondsSinceEpoch}.$coverExt';
-      await _uploadFile('media_covers', newCoverFile, coverName);
-      coverUrl = _supabase.storage.from('media_covers').getPublicUrl(coverName);
-    }
+    final response = await _supabase
+        .from('market_messages')
+        .insert(newMessage)
+        .select();
+    
+    final sentMessage = MarketMessage.fromJson((response as List).first);
 
-    if (newVideoFile != null) {
-      if (item.videoUrl.contains('supabase.co')) {
-        final oldPath = _extractStoragePath(item.videoUrl);
-        if (oldPath != null) {
-          await _supabase.storage.from('media_videos').remove([oldPath]);
-        }
-      }
-      final videoExt = newVideoFile.path.split('.').last;
-      final videoName = 'videos/${DateTime.now().millisecondsSinceEpoch}.$videoExt';
-      await _uploadFile('media_videos', newVideoFile, videoName);
-      videoUrl = _supabase.storage.from('media_videos').getPublicUrl(videoName);
-    }
+    await _supabase
+        .from('market_conversations')
+        .update({
+          'last_message': message,
+          'last_message_at': DateTime.now().toIso8601String(),
+        })
+        .eq('id', conversationId);
 
-    final updatedItem = item.copyWith(
-      coverUrl: coverUrl!,
-      videoUrl: videoUrl!,
-      updatedAt: DateTime.now(),
-    );
-    await update(updatedItem);
+    return sentMessage;
   }
 
-  // Suppression complète (base + fichiers Storage)
-  Future<void> deleteMedia(MediaContent item) async {
+  Future<void> markAsRead(String conversationId, String userId) async {
+    await _supabase
+        .from('market_messages')
+        .update({'is_read': true})
+        .eq('conversation_id', conversationId)
+        .neq('sender_id', userId);
+  }
+
+  Stream<List<MarketMessage>> getMessages(String conversationId) {
+    return _supabase
+        .from('market_messages')
+        .stream(primaryKey: ['id'])
+        .eq('conversation_id', conversationId)
+        .order('created_at', ascending: true)
+        .map((list) => list.map((e) => MarketMessage.fromJson(e)).toList());
+  }
+
+  Future<List<MarketConversation>> getUserConversations(String userId) async {
+    final response = await _supabase
+        .from('market_conversations')
+        .select('*')
+        .eq('buyer_id', userId)
+        .eq('is_active', true)
+        .order('last_message_at', ascending: false);
+    
+    return (response as List).map((e) => MarketConversation.fromJson(e)).toList();
+  }
+
+  // ✅ MÉTHODE CORRIGÉE
+  Future<int> getUnreadCount(String userId) async {
     try {
-      if (item.coverUrl.contains('supabase.co')) {
-        final coverPath = _extractStoragePath(item.coverUrl);
-        if (coverPath != null) {
-          await _supabase.storage.from('media_covers').remove([coverPath]);
-        }
-      }
-      if (item.videoUrl.contains('supabase.co')) {
-        final videoPath = _extractStoragePath(item.videoUrl);
-        if (videoPath != null) {
-          await _supabase.storage.from('media_videos').remove([videoPath]);
-        }
-      }
-    } catch (e) {
-      print('Erreur suppression fichiers: $e');
-    }
-    await _supabase.from('media_contents').delete().eq('id', item.id);
-  }
-
-  // ==================== MÉTHODES PRIVÉES ====================
-
-  Future<void> _uploadFile(String bucket, File file, String path) async {
-    try {
-      print('📤 Upload vers $bucket/$path');
-      print('📁 Taille: ${await file.length()} bytes');
+      final response = await _supabase
+          .from('market_messages')
+          .select('id')
+          .eq('is_read', false)
+          .neq('sender_id', userId);
       
-      final bytes = await file.readAsBytes();
-      await _supabase.storage.from(bucket).uploadBinary(
-        path, 
-        bytes,
-        fileOptions: const FileOptions(cacheControl: '3600', upsert: true),
-      );
-      
-      print('✅ Upload réussi: $path');
+      return (response as List).length;
     } catch (e) {
-      print('❌ Erreur upload: $e');
-      rethrow;
+      if (kDebugMode) print('Error getUnreadCount: $e');
+      return 0;
     }
   }
 
-  String? _extractStoragePath(String url) {
-    final uri = Uri.tryParse(url);
-    if (uri == null) return null;
-    final segments = uri.pathSegments;
-    final publicIndex = segments.indexOf('public');
-    if (publicIndex != -1 && publicIndex + 2 < segments.length) {
-      return segments.sublist(publicIndex + 2).join('/');
-    }
-    return null;
+  Future<void> deleteConversation(String conversationId) async {
+    await _supabase
+        .from('market_conversations')
+        .update({'is_active': false})
+        .eq('id', conversationId);
   }
 }
