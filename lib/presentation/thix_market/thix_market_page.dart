@@ -12,7 +12,8 @@ import 'widgets/product_card.dart';
 import 'package:thix_id/presentation/common/banner_carousel.dart';
 import 'package:thix_id/services/banner_service.dart';
 import 'package:thix_id/models/banner.dart';
-import 'package:thix_id/services/market/market_chat_service.dart';
+// Supprimer cet import car non utilisé
+// import 'package:thix_id/services/market/market_chat_service.dart';
 
 class ThixMarketPage extends StatefulWidget {
   const ThixMarketPage({super.key});
@@ -169,7 +170,11 @@ class _ThixMarketPageState extends State<ThixMarketPage> {
                     '${_priceRange.start.round()} CDF',
                     '${_priceRange.end.round()} CDF',
                   ),
-                  onChanged: (values) => setModalState(() => _priceRange = values),
+                  onChanged: (values) {
+                    setModalState(() {
+                      _priceRange = values;
+                    });
+                  },
                 ),
                 const SizedBox(height: 16),
                 
@@ -180,7 +185,11 @@ class _ThixMarketPageState extends State<ThixMarketPage> {
                   max: 5,
                   divisions: 10,
                   label: _minRating.toStringAsFixed(1),
-                  onChanged: (v) => setModalState(() => _minRating = v),
+                  onChanged: (v) {
+                    setModalState(() {
+                      _minRating = v;
+                    });
+                  },
                 ),
                 const SizedBox(height: 16),
                 
@@ -191,7 +200,11 @@ class _ThixMarketPageState extends State<ThixMarketPage> {
                   children: _cities.map((city) => FilterChip(
                     label: Text(city),
                     selected: _selectedCity == city,
-                    onSelected: (_) => setModalState(() => _selectedCity = city),
+                    onSelected: (_) {
+                      setModalState(() {
+                        _selectedCity = city;
+                      });
+                    },
                     selectedColor: const Color(0xFFD4AF37),
                   )).toList(),
                 ),
@@ -249,11 +262,15 @@ class _ThixMarketPageState extends State<ThixMarketPage> {
     );
   }
 
-  Widget _buildSortChip(String label, String value, Function(dynamic) setModalState) {
+  Widget _buildSortChip(String label, String value, void Function(void Function()) setModalState) {
     return FilterChip(
       label: Text(label),
       selected: _sortBy == value,
-      onSelected: (_) => setModalState(() => _sortBy = value),
+      onSelected: (_) {
+        setModalState(() {
+          _sortBy = value;
+        });
+      },
       selectedColor: const Color(0xFFD4AF37),
     );
   }
@@ -307,7 +324,6 @@ class _ThixMarketPageState extends State<ThixMarketPage> {
               _buildHeader(userName),
               const SizedBox(height: 20),
               
-              // BANNIÈRES
               if (_banners.isNotEmpty) ...[
                 BannerCarousel(banners: _banners),
                 const SizedBox(height: 20),
