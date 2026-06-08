@@ -845,7 +845,7 @@ class _ProfileTab extends StatelessWidget {
   final ThixProfile profile;
   final int score;
   final ProfileService profileService;
-  final UserService firestoreUserService;
+  final _userService = UserService(Supabase.instance.client);
   const _ProfileTab({required this.authUser, required this.profile, required this.score, required this.profileService, required this.firestoreUserService});
 
   @override
@@ -1469,7 +1469,7 @@ class _ExperienceSkillsTab extends StatelessWidget {
 class _FormationsTab extends StatelessWidget {
   final String uid;
   final AppUser user;
-  final UserService userService;
+  final _userService = UserService(Supabase.instance.client);
   const _FormationsTab({required this.uid, required this.user, required this.userService});
 
   @override
@@ -1691,7 +1691,7 @@ class _DigitalCvPdf {
 
 class _PaymentsTab extends StatelessWidget {
   final String uid;
-  final UserService userService;
+  final _userService = UserService(Supabase.instance.client);
   final AppUser user;
   const _PaymentsTab({required this.uid, required this.userService, required this.user});
 
@@ -1806,7 +1806,7 @@ class _ReceiptPdf {
 class _SecurityTab extends StatelessWidget {
   final String uid;
   final AppUser user;
-  final UserService userService;
+  final _userService = UserService(Supabase.instance.client);
   const _SecurityTab({required this.uid, required this.user, required this.userService});
 
   @override
@@ -3155,7 +3155,7 @@ class _ProfileEditorBodyState extends State<_ProfileEditorBody> {
 
   PlatformFile? _pickedPhoto;
   final _photos = ProfilePhotoService();
-  final _userService = UserService();
+  final _userService = UserService(Supabase.instance.client);
   final _docs = DocumentService();
   bool _saving = false;
 
