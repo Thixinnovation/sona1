@@ -7,21 +7,22 @@ class OrderTimeline extends StatelessWidget {
   const OrderTimeline({super.key, required this.order});
 
   List<Map<String, dynamic>> _getTimelineSteps() {
-    // Helper pour récupérer la date d'un statut
-    DateTime? _getDateForStatus(String status) {
-      final found = order.statusHistory.firstWhere(
-        (h) => h.status == status,
-        orElse: () => null,
-      );
-      return found?.date;
+    // Fonction helper pour récupérer la date
+    DateTime? _getDate(String status) {
+      try {
+        final found = order.statusHistory.firstWhere((h) => h.status == status);
+        return found.date;
+      } catch (e) {
+        return null;
+      }
     }
 
     return [
       {'status': 'pending', 'title': 'Commande placée', 'icon': Icons.shopping_cart, 'date': order.date},
-      {'status': 'confirmed', 'title': 'Confirmée', 'icon': Icons.check_circle, 'date': _getDateForStatus('confirmed')},
-      {'status': 'processing', 'title': 'En préparation', 'icon': Icons.build, 'date': _getDateForStatus('processing')},
-      {'status': 'shipped', 'title': 'Expédiée', 'icon': Icons.local_shipping, 'date': _getDateForStatus('shipped')},
-      {'status': 'delivered', 'title': 'Livrée', 'icon': Icons.home, 'date': _getDateForStatus('delivered')},
+      {'status': 'confirmed', 'title': 'Confirmée', 'icon': Icons.check_circle, 'date': _getDate('confirmed')},
+      {'status': 'processing', 'title': 'En préparation', 'icon': Icons.build, 'date': _getDate('processing')},
+      {'status': 'shipped', 'title': 'Expédiée', 'icon': Icons.local_shipping, 'date': _getDate('shipped')},
+      {'status': 'delivered', 'title': 'Livrée', 'icon': Icons.home, 'date': _getDate('delivered')},
     ];
   }
 
@@ -38,13 +39,11 @@ class OrderTimeline extends StatelessWidget {
 
     return Column(
       children: [
-        // Timeline des étapes
         Row(
           children: steps.asMap().entries.map((entry) {
             final index = entry.key;
             final step = entry.value;
             final isCompleted = index <= currentStep;
-            final isCurrent = index == currentStep;
 
             return Expanded(
               child: Column(
@@ -55,15 +54,8 @@ class OrderTimeline extends StatelessWidget {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: isCompleted ? const Color(0xFFD4AF37) : Colors.grey.shade200,
-                      border: isCurrent
-                          ? Border.all(color: const Color(0xFFD4AF37), width: 2)
-                          : null,
                     ),
-                    child: Icon(
-                      step['icon'] as IconData,
-                      color: isCompleted ? Colors.white : Colors.grey,
-                      size: 20,
-                    ),
+                    child: Icon(step['icon'] as IconData, color: isCompleted ? Colors.white : Colors.grey, size: 20),
                   ),
                   const SizedBox(height: 4),
                   if (index < steps.length - 1)
@@ -77,21 +69,16 @@ class OrderTimeline extends StatelessWidget {
           }).toList(),
         ),
         const SizedBox(height: 12),
-        // Labels des étapes
         Row(
           children: steps.map((step) {
             return Expanded(
               child: Column(
                 children: [
-                  Text(
-                    step['title'] as String,
-                    style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600),
-                    textAlign: TextAlign.center,
-                  ),
+                  Text(step['title'] as String, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600), textAlign: TextAlign.center),
                   const SizedBox(height: 2),
                   if (step['date'] != null)
                     Text(
-                      _formatDate(step['date'] as DateTime),
+                      '${(step['date'] as DateTime).day}/${(step['date'] as DateTime).month}',
                       style: TextStyle(fontSize: 9, color: Colors.grey.shade500),
                     ),
                 ],
@@ -101,9 +88,5 @@ class OrderTimeline extends StatelessWidget {
         ),
       ],
     );
-  }
-
-  String _formatDate(DateTime date) {
-    return '${date.day}/${date.month}';
   }
 }
