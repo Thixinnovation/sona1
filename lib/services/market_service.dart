@@ -6,57 +6,229 @@ class MarketService {
 
   MarketService(this._supabase);
 
+  // ==================== PRODUITS ====================
+
   Future<List<Product>> getFlashSales() async {
-    final response = await _supabase
-        .from('market_products')
-        .select('*')
-        .eq('is_flash_sale', true)
-        .eq('in_stock', true)
-        .order('created_at', ascending: false)
-        .limit(6);
-    return (response as List).map((e) => Product.fromJson(e)).toList();
+    try {
+      final response = await _supabase
+          .from('market_products')
+          .select('*')
+          .eq('is_flash_sale', true)
+          .eq('in_stock', true)
+          .order('created_at', ascending: false)
+          .limit(6);
+      return (response as List).map((e) => Product.fromJson(e)).toList();
+    } catch (e) {
+      debugPrint('Error getFlashSales: $e');
+      return [];
+    }
   }
 
   Future<List<Product>> getFeaturedProducts() async {
-    final response = await _supabase
-        .from('market_products')
-        .select('*')
-        .eq('is_featured', true)
-        .eq('in_stock', true)
-        .order('created_at', ascending: false)
-        .limit(20);
-    return (response as List).map((e) => Product.fromJson(e)).toList();
+    try {
+      final response = await _supabase
+          .from('market_products')
+          .select('*')
+          .eq('is_featured', true)
+          .eq('in_stock', true)
+          .order('created_at', ascending: false)
+          .limit(20);
+      return (response as List).map((e) => Product.fromJson(e)).toList();
+    } catch (e) {
+      debugPrint('Error getFeaturedProducts: $e');
+      return [];
+    }
   }
 
   Future<List<Product>> getProductsByCategory(String category, {int limit = 20}) async {
-  var query = _supabase
-      .from('market_products')
-      .select('*')
-      .eq('in_stock', true);
-  
-  if (category != 'Tous') {
-    query = query.eq('category', category);
+    try {
+      var query = _supabase
+          .from('market_products')
+          .select('*')
+          .eq('in_stock', true);
+      
+      if (category != 'Tous') {
+        query = query.eq('category', category);
+      }
+      
+      final response = await query.order('created_at', ascending: false).limit(limit);
+      return (response as List).map((e) => Product.fromJson(e)).toList();
+    } catch (e) {
+      debugPrint('Error getProductsByCategory: $e');
+      return [];
+    }
   }
-  final response = await query.order('created_at', ascending: false).limit(limit);
-  return (response as List).map((e) => Product.fromJson(e)).toList();
-}
+
   Future<List<Product>> searchProducts(String query) async {
     if (query.isEmpty) return [];
-    final response = await _supabase
-        .from('market_products')
-        .select('*')
-        .ilike('title', '%$query%')
-        .eq('in_stock', true)
-        .limit(30);
-    return (response as List).map((e) => Product.fromJson(e)).toList();
+    try {
+      final response = await _supabase
+          .from('market_products')
+          .select('*')
+          .ilike('title', '%$query%')
+          .eq('in_stock', true)
+          .limit(30);
+      return (response as List).map((e) => Product.fromJson(e)).toList();
+    } catch (e) {
+      debugPrint('Error searchProducts: $e');
+      return [];
+    }
   }
 
   Future<Product?> getProductById(String id) async {
-    final response = await _supabase
-        .from('market_products')
-        .select('*')
-        .eq('id', id)
-        .maybeSingle();
-    return response != null ? Product.fromJson(response) : null;
+    try {
+      final response = await _supabase
+          .from('market_products')
+          .select('*')
+          .eq('id', id)
+          .maybeSingle();
+      return response != null ? Product.fromJson(response) : null;
+    } catch (e) {
+      debugPrint('Error getProductById: $e');
+      return null;
+    }
+  }
+
+  Future<List<Product>> getProductsByCity(String city, {int limit = 20}) async {
+    try {
+      final response = await _supabase
+          .from('market_products')
+          .select('*')
+          .eq('city', city)
+          .eq('in_stock', true)
+          .order('created_at', ascending: false)
+          .limit(limit);
+      return (response as List).map((e) => Product.fromJson(e)).toList();
+    } catch (e) {
+      debugPrint('Error getProductsByCity: $e');
+      return [];
+    }
+  }
+
+  Future<List<Product>> getProductsByPriceRange(double min, double max, {int limit = 20}) async {
+    try {
+      final response = await _supabase
+          .from('market_products')
+          .select('*')
+          .gte('price', min)
+          .lte('price', max)
+          .eq('in_stock', true)
+          .order('price', ascending: true)
+          .limit(limit);
+      return (response as List).map((e) => Product.fromJson(e)).toList();
+    } catch (e) {
+      debugPrint('Error getProductsByPriceRange: $e');
+      return [];
+    }
+  }
+
+  Future<List<Product>> getProductsByRating(double minRating, {int limit = 20}) async {
+    try {
+      final response = await _supabase
+          .from('market_products')
+          .select('*')
+          .gte('rating', minRating)
+          .eq('in_stock', true)
+          .order('rating', ascending: false)
+          .limit(limit);
+      return (response as List).map((e) => Product.fromJson(e)).toList();
+    } catch (e) {
+      debugPrint('Error getProductsByRating: $e');
+      return [];
+    }
+  }
+
+  // ==================== ADMIN ====================
+
+  Future<String> createProduct(Map<String, dynamic> data) async {
+    try {
+      final response = await _supabase
+          .from('market_products')
+          .insert(data)
+          .select();
+      return (response as List).first['id'] as String;
+    } catch (e) {
+      debugPrint('Error createProduct: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> updateProduct(String id, Map<String, dynamic> data) async {
+    try {
+      await _supabase
+          .from('market_products')
+          .update(data)
+          .eq('id', id);
+    } catch (e) {
+      debugPrint('Error updateProduct: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> deleteProduct(String id) async {
+    try {
+      await _supabase
+          .from('market_products')
+          .delete()
+          .eq('id', id);
+    } catch (e) {
+      debugPrint('Error deleteProduct: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> updateStock(String id, int newStock) async {
+    try {
+      await _supabase
+          .from('market_products')
+          .update({'stock': newStock, 'in_stock': newStock > 0})
+          .eq('id', id);
+    } catch (e) {
+      debugPrint('Error updateStock: $e');
+      rethrow;
+    }
+  }
+
+  // ==================== STATISTIQUES ====================
+
+  Future<int> getTotalProducts() async {
+    try {
+      final response = await _supabase
+          .from('market_products')
+          .select('id', count: CountOption.exact);
+      return response.count ?? 0;
+    } catch (e) {
+      debugPrint('Error getTotalProducts: $e');
+      return 0;
+    }
+  }
+
+  Future<Map<String, dynamic>> getStats() async {
+    try {
+      final total = await getTotalProducts();
+      final inStock = await _supabase
+          .from('market_products')
+          .select('id', count: CountOption.exact)
+          .eq('in_stock', true);
+      final categories = await _supabase
+          .from('market_products')
+          .select('category');
+      
+      final categoryList = (categories as List).map((e) => e['category'] as String).toList();
+      final uniqueCategories = categoryList.toSet().length;
+      
+      return {
+        'total_products': total,
+        'in_stock': inStock.count ?? 0,
+        'categories_count': uniqueCategories,
+      };
+    } catch (e) {
+      debugPrint('Error getStats: $e');
+      return {
+        'total_products': 0,
+        'in_stock': 0,
+        'categories_count': 0,
+      };
+    }
   }
 }
