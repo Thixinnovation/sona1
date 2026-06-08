@@ -8,6 +8,8 @@ import 'package:provider/provider.dart';
 import 'package:thix_id/auth/auth_controller.dart';
 import 'package:thix_id/models/app_user.dart';
 import 'package:thix_id/nav.dart';
+import 'package:thix_id/services/user_service.dart';
+import 'package:thix_id/supabase/supabase_config.dart';
 import '../../theme.dart';
 
 class PaymentMethodCard extends StatelessWidget {
@@ -183,12 +185,11 @@ class _PaymentGatewayPageState extends State<PaymentGatewayPage> {
     bool requireRealThixId = true,
   }) async {
     final auth = context.read<AuthController>();
-    final users = UserService();
+    final users = UserService(Supabase.instance.client);
     String thixId = me.thixId.trim().toUpperCase();
     if (requireRealThixId && _isPendingThixId(thixId)) {
       try {
-        // ✅ Correction : retirer countryOrOrigin et displayName
-        thixId = await users.assignRealThixIdIfMissing(uid: me.id);
+        thixId = await users.ensureThixId(uid: me.id);
       } catch (e) {
         debugPrint('PaymentGateway: THIX ID assignment failed; aborting. err=$e');
         rethrow;
@@ -197,7 +198,6 @@ class _PaymentGatewayPageState extends State<PaymentGatewayPage> {
     final next = me.copyWith(
       thixId: thixId,
       registrationStatus: registrationStatus ?? 'verified',
-      updatedAt: DateTime.now(),
     );
 
     await auth.updateCurrentUser(next);
@@ -205,9 +205,8 @@ class _PaymentGatewayPageState extends State<PaymentGatewayPage> {
     if (!requireRealThixId && _isPendingThixId(next.thixId)) {
       unawaited(() async {
         try {
-          // ✅ Correction : retirer countryOrOrigin et displayName
-          final real = await users.assignRealThixIdIfMissing(uid: next.id);
-          await auth.updateCurrentUser(next.copyWith(thixId: real, updatedAt: DateTime.now()));
+          final real = await users.ensureThixId(uid: next.id);
+          await auth.updateCurrentUser(next.copyWith(thixId: real));
           debugPrint('PaymentGateway: background THIX ID assigned: $real');
         } catch (e) {
           debugPrint('PaymentGateway: background THIX ID assignment skipped/failed err=$e');
