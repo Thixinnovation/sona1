@@ -30,47 +30,19 @@ dependencies:
 
   # Media & Communication
   video_player: ^2.9.2
-  agora_rtc_engine:
-    version: ^6.3.0
-    platforms:
-      android: null
-      ios: null
-  record:
-    version: ^5.1.2
-    platforms:
-      android: null
-      ios: null
+  agora_rtc_engine: ^6.3.0
+  record: ^5.1.2
 
   # Identification & Scanning
-  geolocator:
-    version: ^13.0.4
-    platforms:
-      android: null
-      ios: null
-  nfc_manager:
-    version: ^4.0.0
-    platforms:
-      android: null
-      ios: null
-  mobile_scanner:
-    version: ^7.0.0
-    platforms:
-      android: null
-      ios: null
+  geolocator: ^13.0.4
+  nfc_manager: ^4.0.0
+  mobile_scanner: ^7.0.0
   qr_flutter: ^4.1.0
   barcode_widget: ^2.0.0
 
   # Notifications & Sharing
-  flutter_local_notifications:
-    version: ^20.0.0
-    platforms:
-      android: null
-      ios: null
-  permission_handler:
-    version: ^12.0.0
-    platforms:
-      android: null
-      ios: null
+  flutter_local_notifications: ^20.0.0
+  permission_handler: ^12.0.0
   share_plus: ^10.0.0
 
   # Files & PDF
