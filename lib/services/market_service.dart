@@ -118,7 +118,6 @@ class MarketChatService {
     return (response as List).map((e) => MarketConversation.fromJson(e)).toList();
   }
 
-  // ✅ MÉTHODE CORRIGÉE - Version définitive sans count
   Future<int> getUnreadCount(String userId) async {
     try {
       final response = await _supabase
@@ -127,7 +126,6 @@ class MarketChatService {
           .eq('is_read', false)
           .neq('sender_id', userId);
       
-      // (response as List).length retourne un int, pas un double
       return (response as List).length;
     } catch (e) {
       if (kDebugMode) print('Error getUnreadCount: $e');
