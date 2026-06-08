@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 import 'package:thix_id/auth/auth_controller.dart';
 import 'package:thix_id/models/app_user.dart';
 import 'package:thix_id/nav.dart';
+import 'package:thix_id/services/user_service.dart';
 
 import 'package:thix_id/presentation/common/full_screen_message.dart';
 import 'package:thix_id/presentation/common/alert_info_sheet.dart';
@@ -256,13 +257,13 @@ class _HomePagePremiumState extends State<HomePagePremium>
     setState(() => _searching = true);
 
     try {
-      final userService = UserService();
+      final userService = UserService(Supabase.instance.client);
       AppUser? user;
 
       if (isThix) {
-        user = await userService.fetchUserByThixId(normalized);
+        user = await userService.getUserByThixId(normalized);
       } else {
-        user = await userService.fetchUserByUid(raw);
+        user = await userService.getUserById(raw);
       }
 
       if (!mounted) return;
