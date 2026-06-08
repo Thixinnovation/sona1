@@ -4,7 +4,6 @@ build/
 .flutter-plugins-dependencies
 pubspec.lock
 *.lock
-*.log
 
 # IDE
 .idea/
@@ -15,6 +14,10 @@ pubspec.lock
 .DS_Store
 Thumbs.db
 
-# Firebase (supprimé)
+# Firebase
 firebase.json
 .firebaserc
+lib/firebase_options.dart
+lib/auth/firebase_auth_manager.dart
+lib/services/firestore_user_service.dart
+web/firebase-messaging-sw.js
