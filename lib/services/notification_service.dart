@@ -1,219 +1,88 @@
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'dart:async';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
-class NotificationService {
+class PushNotificationService {
   final SupabaseClient _client;
-  static const String _table = 'notifications';
+  final FlutterLocalNotificationsPlugin _localNotifications = FlutterLocalNotificationsPlugin();
 
-  NotificationService({SupabaseClient? client})
-      : _client = client ?? Supabase.instance.client;
+  PushNotificationService({SupabaseClient? client}) : _client = client ?? Supabase.instance.client;
 
-  Map<String, dynamic> _normalizeRow(Map<String, dynamic> row) {
-    return {
-      'id': row['id'],
-      'user_id': row['user_id'],
-      'type': (row['type'] ?? 'generic').toString(),
-      'title': (row['title'] ?? 'Notification').toString(),
-      'body': (row['body'] ?? row['message'] ?? '').toString(),
-      'read': row['read'] ?? row['seen'] ?? false,
-      'data': row['data'] ?? {},
-      'created_at': row['created_at'],
-    };
+  String _platformLabel() {
+    if (kIsWeb) return 'web';
+    switch (defaultTargetPlatform) {
+      case TargetPlatform.android:
+        return 'android';
+      case TargetPlatform.iOS:
+        return 'ios';
+      case TargetPlatform.macOS:
+        return 'macos';
+      case TargetPlatform.windows:
+        return 'windows';
+      case TargetPlatform.linux:
+        return 'linux';
+      default:
+        return 'unknown';
+    }
   }
 
-  /// Version simplifiée - sans Realtime pour éviter les problèmes de typage
-  Stream<List<Map<String, dynamic>>> streamForUser(String uid) {
-    final controller = StreamController<List<Map<String, dynamic>>>.broadcast();
-    Timer? pollTimer;
-    bool cancelled = false;
-
-    Future<void> fetchAndEmit() async {
-      if (cancelled) return;
-      try {
-        final data = await _client
-            .from(_table)
-            .select()
-            .eq('user_id', uid)
-            .order('created_at', ascending: false)
-            .limit(50);
-
-        final list = (data as List)
-            .map((e) => _normalizeRow(e as Map<String, dynamic>))
-            .toList();
-        controller.add(list);
-      } catch (e) {
-        debugPrint('NotificationService fetch error: $e');
-        controller.add([]);
-      }
-    }
-
-    // Polling toutes les 3 secondes
-    void startPolling() {
-      pollTimer?.cancel();
-      pollTimer = Timer.periodic(const Duration(seconds: 3), (_) => fetchAndEmit());
-    }
-
-    startPolling();
-    fetchAndEmit();
-
-    controller.onCancel = () {
-      cancelled = true;
-      pollTimer?.cancel();
-    };
-
-    return controller.stream;
-  }
-
-  /// Version avec Realtime simplifiée (corrigée)
-  Stream<List<Map<String, dynamic>>> streamForUserRealtime(String uid) {
-    final controller = StreamController<List<Map<String, dynamic>>>.broadcast();
-    RealtimeChannel? channel;
-    Timer? pollTimer;
-    bool cancelled = false;
-
-    Future<void> fetchAndEmit() async {
-      if (cancelled) return;
-      try {
-        final data = await _client
-            .from(_table)
-            .select()
-            .eq('user_id', uid)
-            .order('created_at', ascending: false)
-            .limit(50);
-
-        final list = (data as List)
-            .map((e) => _normalizeRow(e as Map<String, dynamic>))
-            .toList();
-        controller.add(list);
-      } catch (e) {
-        debugPrint('NotificationService fetch error: $e');
-        controller.add([]);
-      }
-    }
-
-    void startPolling() {
-      pollTimer?.cancel();
-      pollTimer = Timer.periodic(const Duration(seconds: 5), (_) => fetchAndEmit());
-    }
-
-    // Tentative Realtime avec API simplifiée (dynamic)
+  Future<void> _upsertToken({required String userId, required String token}) async {
     try {
-      channel = _client.channel('notifications:$uid');
-      
-      // Utilisation de dynamic pour éviter les erreurs de typage
-      (channel as dynamic).on(
-        'postgres_changes',
-        {
-          'event': '*',
-          'schema': 'public',
-          'table': _table,
-          'filter': 'user_id=eq.$uid',
-        },
-        (_) => fetchAndEmit(),
-      );
-      
-      // ✅ CORRECTION : La méthode subscribe prend maintenant un callback avec un seul paramètre
-      (channel as dynamic).subscribe((status) {
-        debugPrint('Notification subscribe: $status');
-        if (status == 'CHANNEL_ERROR') {
-          startPolling();
-        }
-      });
+      await _client.from('thix_push_tokens').upsert({
+        'user_id': userId,
+        'token': token,
+        'platform': _platformLabel(),
+        'last_seen_at': DateTime.now().toUtc().toIso8601String(),
+        'updated_at': DateTime.now().toUtc().toIso8601String(),
+      }, onConflict: 'token');
+      debugPrint('PushNotificationService: token upsert success');
+    } on PostgrestException catch (e) {
+      debugPrint('PushNotificationService: PostgrestException $e');
     } catch (e) {
-      debugPrint('Realtime failed → polling: $e');
-      startPolling();
-    }
-
-    fetchAndEmit();
-
-    controller.onCancel = () {
-      cancelled = true;
-      pollTimer?.cancel();
-      if (channel != null) {
-        try {
-          _client.removeChannel(channel!);
-        } catch (_) {}
-      }
-    };
-
-    return controller.stream;
-  }
-
-  Stream<int> streamUnreadCount(String uid) {
-    return streamForUser(uid)
-        .map((list) => list.where((n) => n['read'] != true).length)
-        .distinct();
-  }
-
-  Future<void> add({
-    required String toUid,
-    required String type,
-    required String title,
-    required String body,
-    Map<String, dynamic>? data,
-  }) async {
-    try {
-      await _client.from(_table).insert({
-        'user_id': toUid,
-        'type': type,
-        'title': title,
-        'body': body,
-        'read': false,
-        'data': data ?? {},
-      });
-    } catch (e) {
-      debugPrint('Notification add error: $e');
+      debugPrint('PushNotificationService: token upsert error $e');
     }
   }
 
-  Future<void> markRead({required String uid, required String notificationId}) async {
-    try {
-      await _client
-          .from(_table)
-          .update({'read': true})
-          .eq('id', notificationId)
-          .eq('user_id', uid);
-    } catch (e) {
-      debugPrint('Notification markRead error: $e');
-    }
+  Future<void> _initLocalNotifications() async {
+    if (kIsWeb) return; // Web non supporté
+
+    const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const iosInit = DarwinInitializationSettings();
+    const init = InitializationSettings(android: androidInit, iOS: iosInit);
+    await _localNotifications.initialize(init);
+
+    const channel = AndroidNotificationChannel(
+      'thix_general',
+      'THIX Notifications',
+      description: 'Notifications générales THIX ID',
+      importance: Importance.high,
+    );
+    await _localNotifications.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+        ?.createNotificationChannel(channel);
   }
 
-  Future<void> markAllRead(String uid) async {
-    try {
-      await _client
-          .from(_table)
-          .update({'read': true})
-          .eq('user_id', uid)
-          .eq('read', false);
-    } catch (e) {
-      debugPrint('Notification markAllRead error: $e');
-    }
-  }
+  Future<void> showNotification({required String title, required String body, String? payload, String? icon}) async {
+    if (kIsWeb) return;
 
-  Future<List<Map<String, dynamic>>> getNotifications(String uid) async {
-    try {
-      final data = await _client
-          .from(_table)
-          .select()
-          .eq('user_id', uid)
-          .order('created_at', ascending: false)
-          .limit(50);
-      
-      return (data as List)
-          .map((e) => _normalizeRow(e as Map<String, dynamic>))
-          .toList();
-    } catch (e) {
-      debugPrint('NotificationService getNotifications error: $e');
-      return [];
-    }
-  }
-
-  Future<void> delete(String notificationId) async {
-    try {
-      await _client.from(_table).delete().eq('id', notificationId);
-    } catch (e) {
-      debugPrint('Notification delete error: $e');
-    }
+    const androidDetails = AndroidNotificationDetails(
+      'thix_general',
+      'THIX Notifications',
+      channelDescription: 'Notifications générales THIX ID',
+      importance: Importance.high,
+      priority: Priority.high,
+    );
+    const iosDetails = DarwinNotificationDetails(
+      presentAlert: true,
+      presentBadge: true,
+      presentSound: true,
+    );
+    const details = NotificationDetails(android: androidDetails, iOS: iosDetails);
+    await _localNotifications.show(
+      DateTime.now().millisecondsSinceEpoch ~/ 1000,
+      title,
+      body,
+      details,
+      payload: payload,
+    );
   }
 }
