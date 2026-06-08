@@ -119,20 +119,22 @@ class MarketChatService {
   }
 
   // ✅ CORRECTION : Méthode getUnreadCount simplifiée
-  Future<int> getUnreadCount(String userId) async {
-    try {
-      final response = await _supabase
-          .from('market_messages')
-          .select('id')
-          .eq('is_read', false)
-          .neq('sender_id', userId);
-      
-      return (response as List).length;
-    } catch (e) {
-      if (kDebugMode) print('Error getUnreadCount: $e');
-      return 0;
-    }
+  // Remplacer la méthode getUnreadCount par :
+
+Future<int> getUnreadCount(String userId) async {
+  try {
+    final response = await _supabase
+        .from('market_messages')
+        .select('id')
+        .eq('is_read', false)
+        .neq('sender_id', userId);
+    
+    return (response as List).length;
+  } catch (e) {
+    if (kDebugMode) print('Error getUnreadCount: $e');
+    return 0;
   }
+}
 
   Future<void> deleteConversation(String conversationId) async {
     await _supabase
