@@ -8,7 +8,6 @@ import 'package:provider/provider.dart';
 import 'package:thix_id/auth/auth_controller.dart';
 import 'package:thix_id/models/app_user.dart';
 import 'package:thix_id/nav.dart';
-import 'package:thix_id/services/firestore_user_service.dart';
 import '../../theme.dart';
 
 class PaymentMethodCard extends StatelessWidget {
@@ -184,7 +183,7 @@ class _PaymentGatewayPageState extends State<PaymentGatewayPage> {
     bool requireRealThixId = true,
   }) async {
     final auth = context.read<AuthController>();
-    final users = FirestoreUserService();
+    final users = UserService();
     String thixId = me.thixId.trim().toUpperCase();
     if (requireRealThixId && _isPendingThixId(thixId)) {
       try {

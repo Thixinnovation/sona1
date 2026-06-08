@@ -16,7 +16,6 @@ import 'package:thix_id/presentation/common/notifications_sheet.dart';
 import 'package:thix_id/presentation/common/thix_identity_sheets.dart';
 import 'package:thix_id/presentation/emergency/emergency_overlay.dart';
 
-import 'package:thix_id/services/firestore_user_service.dart';
 import 'package:thix_id/services/notification_service.dart';
 import 'package:thix_id/services/notification_counters_service.dart';
 import 'package:thix_id/services/thix_id_service.dart';
@@ -257,7 +256,7 @@ class _HomePagePremiumState extends State<HomePagePremium>
     setState(() => _searching = true);
 
     try {
-      final userService = FirestoreUserService();
+      final userService = UserService();
       AppUser? user;
 
       if (isThix) {

@@ -9,7 +9,6 @@ import '../../nav.dart';
 import 'package:thix_id/auth/auth_controller.dart';
 import 'package:thix_id/auth/auth_manager.dart';
 import 'package:thix_id/models/app_user.dart';
-import 'package:thix_id/services/firestore_user_service.dart';
 import 'package:thix_id/services/profile_photo_service.dart';
 import 'package:thix_id/services/platform_file_from_path_stub.dart'
     if (dart.library.io) 'package:thix_id/services/platform_file_from_path_io.dart';
@@ -119,7 +118,7 @@ class EnterpriseRegistrationPage extends StatefulWidget {
 }
 
 class _EnterpriseRegistrationPageState extends State<EnterpriseRegistrationPage> {
-  final _firestoreUsers = FirestoreUserService();
+  final _firestoreUsers = UserService();
   final _photos = ProfilePhotoService();
   final _companyNameC = TextEditingController();
   final _emailC = TextEditingController();

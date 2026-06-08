@@ -7,7 +7,6 @@ import 'package:nfc_manager/nfc_manager.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:thix_id/nav.dart';
 import 'package:thix_id/services/document_service.dart';
-import 'package:thix_id/services/firestore_user_service.dart';
 import 'package:thix_id/services/thix_id_service.dart';
 import 'package:thix_id/supabase/supabase_config.dart';
 
@@ -351,7 +350,7 @@ class _ThixVerifyBottomSheet extends StatefulWidget {
 }
 
 class _ThixVerifyBottomSheetState extends State<_ThixVerifyBottomSheet> {
-  final _users = FirestoreUserService();
+  final _users = UserService();
   late final TextEditingController _uidController;
   late final TextEditingController _docController;
   bool _loading = false;

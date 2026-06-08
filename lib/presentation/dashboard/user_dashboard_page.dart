@@ -20,7 +20,6 @@ import 'package:thix_id/presentation/common/upload_document_preview.dart';
 import 'package:thix_id/services/document_service.dart';
 import 'package:thix_id/services/verification_status.dart';
 import 'package:thix_id/services/profile_photo_service.dart';
-import 'package:thix_id/services/firestore_user_service.dart';
 import 'package:thix_id/services/profile_service.dart';
 import 'package:thix_id/models/thix_profile.dart';
 import 'package:thix_id/services/platform_file_from_path_stub.dart'
@@ -846,7 +845,7 @@ class _ProfileTab extends StatelessWidget {
   final ThixProfile profile;
   final int score;
   final ProfileService profileService;
-  final FirestoreUserService firestoreUserService;
+  final UserService firestoreUserService;
   const _ProfileTab({required this.authUser, required this.profile, required this.score, required this.profileService, required this.firestoreUserService});
 
   @override
@@ -1195,7 +1194,7 @@ class _ExpandableTextRowState extends State<_ExpandableTextRow> {
 class _DocumentsTab extends StatelessWidget {
   final String uid;
   final DocumentService docs;
-  final FirestoreUserService userService;
+  final UserService userService;
   final String filter;
   final ValueChanged<String> onChangeFilter;
   const _DocumentsTab({required this.uid, required this.docs, required this.userService, required this.filter, required this.onChangeFilter});
@@ -1470,7 +1469,7 @@ class _ExperienceSkillsTab extends StatelessWidget {
 class _FormationsTab extends StatelessWidget {
   final String uid;
   final AppUser user;
-  final FirestoreUserService userService;
+  final UserService userService;
   const _FormationsTab({required this.uid, required this.user, required this.userService});
 
   @override
@@ -1692,7 +1691,7 @@ class _DigitalCvPdf {
 
 class _PaymentsTab extends StatelessWidget {
   final String uid;
-  final FirestoreUserService userService;
+  final UserService userService;
   final AppUser user;
   const _PaymentsTab({required this.uid, required this.userService, required this.user});
 
@@ -1807,7 +1806,7 @@ class _ReceiptPdf {
 class _SecurityTab extends StatelessWidget {
   final String uid;
   final AppUser user;
-  final FirestoreUserService userService;
+  final UserService userService;
   const _SecurityTab({required this.uid, required this.user, required this.userService});
 
   @override
@@ -2134,7 +2133,7 @@ class _SkillsEditorBodyState extends State<_SkillsEditorBody> {
 }
 
 class _UserDashboardPageState extends State<UserDashboardPage> {
-  final _userService = FirestoreUserService();
+  final _userService = UserService();
   final _docs = DocumentService();
   final _profileService = ProfileService();
 
@@ -3156,7 +3155,7 @@ class _ProfileEditorBodyState extends State<_ProfileEditorBody> {
 
   PlatformFile? _pickedPhoto;
   final _photos = ProfilePhotoService();
-  final _userService = FirestoreUserService();
+  final _userService = UserService();
   final _docs = DocumentService();
   bool _saving = false;
 

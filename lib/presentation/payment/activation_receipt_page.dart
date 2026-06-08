@@ -13,7 +13,6 @@ import 'package:thix_id/auth/auth_controller.dart';
 import 'package:thix_id/models/app_user.dart';
 import 'package:thix_id/models/thix_profile.dart';
 import 'package:thix_id/nav.dart';
-import 'package:thix_id/services/firestore_user_service.dart';
 import 'package:thix_id/services/profile_service.dart';
 import 'package:thix_id/supabase/supabase_config.dart';
 import 'package:thix_id/theme.dart';
@@ -62,7 +61,7 @@ class _ActivationReceiptPageState extends State<ActivationReceiptPage> {
     if (!_isPendingThixId(me.thixId)) return;
     setState(() => _ensuringThixId = true);
     try {
-      final users = FirestoreUserService();
+      final users = UserService();
       final real = await users.assignRealThixIdIfMissing(uid: me.id);
       await auth.updateCurrentUser(me.copyWith(thixId: real, updatedAt: DateTime.now()));
     } catch (e) {

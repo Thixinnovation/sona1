@@ -10,7 +10,6 @@ import 'package:thix_id/models/app_user.dart';
 import 'package:thix_id/nav.dart';
 import 'package:thix_id/presentation/common/parcours_form.dart';
 import 'package:thix_id/services/document_service.dart';
-import 'package:thix_id/services/firestore_user_service.dart';
 import 'package:thix_id/theme.dart';
 import 'package:thix_id/presentation/common/date_picker_field.dart';
 import 'package:thix_id/services/profile_photo_service.dart';
@@ -359,7 +358,7 @@ class PersonalRegistrationPage extends StatefulWidget {
 }
 
 class _PersonalRegistrationPageState extends State<PersonalRegistrationPage> {
-  final _firestoreUsers = FirestoreUserService();
+  final _firestoreUsers = UserService();
   final _docs = DocumentService();
   final _photos = ProfilePhotoService();
 
