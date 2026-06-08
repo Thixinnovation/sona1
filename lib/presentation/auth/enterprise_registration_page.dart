@@ -9,6 +9,7 @@ import '../../nav.dart';
 import 'package:thix_id/auth/auth_controller.dart';
 import 'package:thix_id/auth/auth_manager.dart';
 import 'package:thix_id/models/app_user.dart';
+import 'package:thix_id/services/user_service.dart';
 import 'package:thix_id/services/profile_photo_service.dart';
 import 'package:thix_id/services/platform_file_from_path_stub.dart'
     if (dart.library.io) 'package:thix_id/services/platform_file_from_path_io.dart';
@@ -118,7 +119,7 @@ class EnterpriseRegistrationPage extends StatefulWidget {
 }
 
 class _EnterpriseRegistrationPageState extends State<EnterpriseRegistrationPage> {
-  final _firestoreUsers = UserService();
+  final _userService = UserService(Supabase.instance.client);
   final _photos = ProfilePhotoService();
   final _companyNameC = TextEditingController();
   final _emailC = TextEditingController();
@@ -209,11 +210,11 @@ class _EnterpriseRegistrationPageState extends State<EnterpriseRegistrationPage>
       return;
     }
     try {
-      await _firestoreUsers.updateProfile(uid: me.id, displayName: companyName, registrationStatus: 'draft');
+      await _userService.updateProfile(uid: me.id, displayName: companyName, registrationStatus: 'draft');
       if (_pickedPhoto != null) {
         try {
           final url = await _photos.uploadProfilePhoto(uid: me.id, file: _pickedPhoto!);
-          await _firestoreUsers.updateProfile(uid: me.id, photoUrl: url);
+          await _userService.updateProfile(uid: me.id, photoUrl: url);
         } catch (e) {
           debugPrint('EnterpriseReg: avatar upload failed uid=${me.id} err=$e');
           if (mounted) {
@@ -222,10 +223,9 @@ class _EnterpriseRegistrationPageState extends State<EnterpriseRegistrationPage>
           rethrow;
         }
       }
-      // Correction : retrait du paramètre countryCode
-      await _firestoreUsers.ensureThixId(uid: me.id);
-      await _firestoreUsers.ensureThixChat(uid: me.id, desired: '@${companyName.toLowerCase().replaceAll(RegExp(r"[^a-z0-9._]"), '')}${DateTime.now().millisecondsSinceEpoch.toString().substring(9)}');
-      await _firestoreUsers.updateProfile(uid: me.id, registrationStatus: 'awaiting_payment');
+      await _userService.ensureThixId(uid: me.id);
+      await _userService.ensureThixChat(uid: me.id, desired: '@${companyName.toLowerCase().replaceAll(RegExp(r"[^a-z0-9._]"), '')}${DateTime.now().millisecondsSinceEpoch.toString().substring(9)}');
+      await _userService.updateProfile(uid: me.id, registrationStatus: 'awaiting_payment');
     } catch (e) {
       debugPrint('EnterpriseReg: prepare identifiers failed uid=${me.id} err=$e');
       if (mounted) {
@@ -243,7 +243,6 @@ class _EnterpriseRegistrationPageState extends State<EnterpriseRegistrationPage>
     context.go('${AppRoutes.payment}?returnTo=$receiptReturn');
   }
 
-  // Correction : FilePicker.platform au lieu de FilePicker
   Future<void> _pickPhoto() async {
     try {
       final res = await FilePicker.platform.pickFiles(
@@ -279,7 +278,7 @@ class _EnterpriseRegistrationPageState extends State<EnterpriseRegistrationPage>
                   colors: [Color(0xFFF9C74F), Color(0xFFD4AF37), Color(0xFF996515)],
                   stops: [0, 0.5, 1],
                 ),
-                color: Colors.white, // fallback
+                color: Colors.white,
               ),
               child: ColoredBox(color: context.theme.scaffoldBackgroundColor.withValues(alpha: 0.92)),
             ),
@@ -750,8 +749,7 @@ class _EnterpriseRegistrationPageState extends State<EnterpriseRegistrationPage>
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.md),
-          borderSide: BorderSide(color: context.theme.dividerColor),
-        ),
+          borderSide: BorderSide(color: context.theme.dividerColor)),
         contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 14),
       ),
       controller: readOnly ? TextEditingController(text: hint) : null,
