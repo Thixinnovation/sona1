@@ -104,7 +104,6 @@ class SupabaseAuthManager implements AuthManager {
           education: p.education,
           experience: p.experience,
           skills: p.skills,
-          updatedAt: p.updatedAt,
         );
 
         final unchanged = merged.displayName == cur.displayName &&
@@ -127,8 +126,7 @@ class SupabaseAuthManager implements AuthManager {
             merged.emergencyContactName == cur.emergencyContactName &&
             merged.emergencyContactPhone == cur.emergencyContactPhone &&
             merged.emergencyContactRelation == cur.emergencyContactRelation &&
-            listEquals(merged.languages, cur.languages) &&
-            merged.updatedAt == cur.updatedAt;
+            listEquals(merged.languages, cur.languages);
         if (unchanged) return;
         _currentUser.value = merged;
       },
