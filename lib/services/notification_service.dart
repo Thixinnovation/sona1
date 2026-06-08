@@ -1,4 +1,3 @@
-// lib/services/notification_service.dart
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'dart:async';
@@ -24,7 +23,6 @@ class NotificationService {
   }
 
   /// Version simplifiée - sans Realtime pour éviter les problèmes de typage
-  /// Utilise uniquement le polling (rafraîchissement périodique)
   Stream<List<Map<String, dynamic>>> streamForUser(String uid) {
     final controller = StreamController<List<Map<String, dynamic>>>.broadcast();
     Timer? pollTimer;
@@ -57,7 +55,7 @@ class NotificationService {
     }
 
     startPolling();
-    fetchAndEmit(); // Chargement initial
+    fetchAndEmit();
 
     controller.onCancel = () {
       cancelled = true;
@@ -67,8 +65,7 @@ class NotificationService {
     return controller.stream;
   }
 
-  /// Version avec Realtime simplifiée (si vous voulez absolument du temps réel)
-  /// Utilise des dynamic pour contourner les problèmes de typage
+  /// Version avec Realtime simplifiée (corrigée)
   Stream<List<Map<String, dynamic>>> streamForUserRealtime(String uid) {
     final controller = StreamController<List<Map<String, dynamic>>>.broadcast();
     RealtimeChannel? channel;
@@ -116,9 +113,10 @@ class NotificationService {
         (_) => fetchAndEmit(),
       );
       
-      (channel as dynamic).subscribe((status, [error]) {
+      // ✅ CORRECTION : La méthode subscribe prend maintenant un callback avec un seul paramètre
+      (channel as dynamic).subscribe((status) {
         debugPrint('Notification subscribe: $status');
-        if (status == 'CHANNEL_ERROR' || error != null) {
+        if (status == 'CHANNEL_ERROR') {
           startPolling();
         }
       });
@@ -193,7 +191,6 @@ class NotificationService {
     }
   }
 
-  /// Méthode utilitaire pour récupérer les notifications une fois
   Future<List<Map<String, dynamic>>> getNotifications(String uid) async {
     try {
       final data = await _client
@@ -212,7 +209,6 @@ class NotificationService {
     }
   }
 
-  /// Méthode utilitaire pour supprimer une notification
   Future<void> delete(String notificationId) async {
     try {
       await _client.from(_table).delete().eq('id', notificationId);
