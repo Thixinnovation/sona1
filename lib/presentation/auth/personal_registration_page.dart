@@ -10,6 +10,7 @@ import 'package:thix_id/models/app_user.dart';
 import 'package:thix_id/nav.dart';
 import 'package:thix_id/presentation/common/parcours_form.dart';
 import 'package:thix_id/services/document_service.dart';
+import 'package:thix_id/services/user_service.dart';
 import 'package:thix_id/theme.dart';
 import 'package:thix_id/presentation/common/date_picker_field.dart';
 import 'package:thix_id/services/profile_photo_service.dart';
@@ -358,7 +359,7 @@ class PersonalRegistrationPage extends StatefulWidget {
 }
 
 class _PersonalRegistrationPageState extends State<PersonalRegistrationPage> {
-  final _firestoreUsers = UserService();
+  final _userService = UserService(Supabase.instance.client);
   final _docs = DocumentService();
   final _photos = ProfilePhotoService();
 
@@ -715,7 +716,7 @@ class _PersonalRegistrationPageState extends State<PersonalRegistrationPage> {
         return;
       }
 
-      await _firestoreUsers.updateProfile(
+      await _userService.updateProfile(
         uid: me.id,
         displayName: _nameC.text.trim(),
         fullName: _nameC.text.trim(),
@@ -760,7 +761,7 @@ class _PersonalRegistrationPageState extends State<PersonalRegistrationPage> {
 
       if (_pickedPhoto != null) {
         final url = await _photos.uploadProfilePhoto(uid: me.id, file: _pickedPhoto!);
-        await _firestoreUsers.updateProfile(uid: me.id, photoUrl: url);
+        await _userService.updateProfile(uid: me.id, photoUrl: url);
       }
     } catch (e) {
       debugPrint('PersonalReg: save step1 failed err=$e');
@@ -834,7 +835,7 @@ class _PersonalRegistrationPageState extends State<PersonalRegistrationPage> {
 
       setState(() => _isLoading = true);
       try {
-        await _firestoreUsers.updateProfile(
+        await _userService.updateProfile(
           uid: me.id,
           bio: _bioC.text.trim(),
           competence: _competenceC.text.trim(),
@@ -873,11 +874,11 @@ class _PersonalRegistrationPageState extends State<PersonalRegistrationPage> {
 
       setState(() => _isLoading = true);
       try {
-        final thixId = await _firestoreUsers.ensureThixId(uid: me.id);
+        final thixId = await _userService.ensureThixId(uid: me.id);
         final suggested = _suggestChatFromName(_nameC.text.trim());
-        final claimed = await _firestoreUsers.ensureThixChat(uid: me.id, desired: _thixChatC.text.trim().isEmpty ? suggested : _thixChatC.text);
+        final claimed = await _userService.ensureThixChat(uid: me.id, desired: _thixChatC.text.trim().isEmpty ? suggested : _thixChatC.text);
         _thixChatC.text = claimed;
-        await _firestoreUsers.updateProfile(uid: me.id, registrationStatus: 'identifiers_ready', thixChat: claimed);
+        await _userService.updateProfile(uid: me.id, registrationStatus: 'identifiers_ready', thixChat: claimed);
         debugPrint('PersonalReg: identifiers prepared uid=${me.id} thixId=$thixId thixChat=$claimed');
       } catch (e) {
         debugPrint('PersonalReg: identifiers prepare failed uid=${me.id} err=$e');
@@ -973,8 +974,8 @@ class _PersonalRegistrationPageState extends State<PersonalRegistrationPage> {
 
     setState(() => _isLoading = true);
     try {
-      final claimed = await _firestoreUsers.ensureThixChat(uid: me.id, desired: _thixChatC.text);
-      await _firestoreUsers.updateProfile(uid: me.id, thixChat: claimed, registrationStatus: 'awaiting_payment');
+      final claimed = await _userService.ensureThixChat(uid: me.id, desired: _thixChatC.text);
+      await _userService.updateProfile(uid: me.id, thixChat: claimed, registrationStatus: 'awaiting_payment');
       if (!mounted) return;
 
       final receiptReturn = Uri.encodeComponent('/activation-receipt');
