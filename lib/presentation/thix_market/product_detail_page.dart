@@ -4,11 +4,12 @@ import '../../../models/product.dart';
 import '../../../services/cart_service.dart';
 import '../../../services/wishlist_service.dart';
 import '../../../services/market_chat_service.dart';
-import '../../thix_market/chat/seller_chat_page.dart';
 import 'widgets/quantity_selector.dart';
 import 'widgets/rating_stars.dart';
 import 'widgets/product_location.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+// Correction du chemin
+import 'chat/seller_chat_page.dart';  // Au lieu de './../thix_market/chat/seller_chat_page.dart'
 
 class ProductDetailPage extends StatefulWidget {
   final Product product;
@@ -78,8 +79,6 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       return;
     }
 
-    setState(() {});
-
     try {
       final conversation = await _chatService.getOrCreateConversation(
         productId: widget.product.id,
@@ -118,13 +117,6 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       const SnackBar(
         content: Text('Veuillez vous connecter pour continuer'),
         backgroundColor: Colors.orange,
-        action: SnackBarAction(
-          label: 'Se connecter',
-          textColor: Colors.white,
-          onPressed: () {
-            // Naviguer vers login
-          },
-        ),
       ),
     );
   }
@@ -154,7 +146,6 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Image
             Stack(
               children: [
                 Image.network(
@@ -192,13 +183,11 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Titre et prix
                   Text(widget.product.title, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 8),
                   RatingStars(rating: widget.product.rating, reviewsCount: widget.product.reviewsCount, size: 16),
                   const SizedBox(height: 12),
                   
-                  // Prix
                   Row(
                     children: [
                       if (widget.product.oldPrice != null)
@@ -215,7 +204,6 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                   ),
                   const SizedBox(height: 12),
                   
-                  // Stock
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
@@ -229,11 +217,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                   ),
                   const SizedBox(height: 12),
                   
-                  // Localisation
                   ProductLocation(city: widget.product.city, country: widget.product.country),
                   const SizedBox(height: 16),
                   
-                  // Vendeur
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
@@ -283,7 +269,6 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                   ),
                   const SizedBox(height: 16),
                   
-                  // Description
                   const Text('Description', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 8),
                   Text(
@@ -292,7 +277,6 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                   ),
                   const SizedBox(height: 16),
                   
-                  // Quantité
                   if (widget.product.inStock) ...[
                     const Divider(),
                     const SizedBox(height: 16),
