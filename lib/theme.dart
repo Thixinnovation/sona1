@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class AppSpacing {
   // Spacing values
@@ -49,7 +48,6 @@ extension TextStyleContext on BuildContext {
   TextTheme get textStyles => Theme.of(this).textTheme;
 }
 
-
 extension TextStyleExtensions on TextStyle {
   TextStyle get bold => copyWith(fontWeight: FontWeight.w700);
   TextStyle get semiBold => copyWith(fontWeight: FontWeight.w600);
@@ -65,18 +63,14 @@ extension TextStyleExtensions on TextStyle {
 // =============================================================================
 
 class LightModeColors {
-  // Deep navy base (premium)
   static const primary = Color(0xFF071A2B);
   static const onPrimary = Color(0xFFFFFFFF);
   static const secondary = Color(0xFF0A3D62);
   static const onSecondary = Color(0xFFFFFFFF);
-  // Golden metal (premium)
   static const accent = metalGold;
-  // Premium metallic accents
   static const metalGold = Color(0xFFD4AF37);
   static const metalGoldDeep = Color(0xFFB8860B);
   static const metalGoldSoft = Color(0xFFFFF3B0);
-  // Slight champagne background for a warmer premium feel
   static const background = Color(0xFFFBFAF6);
   static const surface = Color(0xFFFFFFFF);
   static const onSurface = Color(0xFF071A2B);
@@ -85,7 +79,6 @@ class LightModeColors {
   static const hint = Color(0xFF94A3B8);
   static const error = Color(0xFFDC2626);
   static const emergencyRed = Color(0xFFFF3B30);
-  // Medical blue palette (Emergency UI)
   static const medicalBlue = Color(0xFF2563EB);
   static const medicalBlueDeep = Color(0xFF1D4ED8);
   static const medicalBlueSoft = Color(0xFFEAF2FF);
@@ -97,14 +90,11 @@ class LightModeColors {
 }
 
 class DarkModeColors {
-  // Deep navy base (premium)
   static const primary = Color(0xFF071A2B);
   static const onPrimary = Color(0xFFFFFFFF);
-  // Gold as secondary for premium accents
   static const secondary = metalGoldDeep;
   static const onSecondary = Color(0xFF071A2B);
   static const accent = metalGold;
-  // Premium metallic accents
   static const metalGold = Color(0xFFD4AF37);
   static const metalGoldDeep = Color(0xFFB8860B);
   static const metalGoldSoft = Color(0xFFFFF3B0);
@@ -116,7 +106,6 @@ class DarkModeColors {
   static const hint = Color(0xFF475569);
   static const error = Color(0xFFEF4444);
   static const emergencyRed = Color(0xFFFF3B30);
-  // Medical blue palette (Emergency UI)
   static const medicalBlue = Color(0xFF60A5FA);
   static const medicalBlueDeep = Color(0xFF3B82F6);
   static const medicalBlueSoft = Color(0xFF0B2336);
@@ -127,10 +116,6 @@ class DarkModeColors {
   static const transparent = Color(0x00000000);
 }
 
-/// Admin / Cyber dark theme accents (electric blue + neon glow).
-///
-/// These are *additional* tokens used by the Admin web dashboard without
-/// disrupting the existing premium gold palette used in the consumer app.
 class AdminCyberColors {
   static const black = Color(0xFF05070C);
   static const panel = Color(0xFF08121E);
@@ -145,10 +130,6 @@ class AdminCyberColors {
   static const success = Color(0xFF34D399);
 }
 
-/// Consumer-side "Learning" palette (ultra-premium dark) for Trainings.
-///
-/// We reuse the same futuristic aesthetic as Admin, but keep it separated from
-/// the general app tokens so we can apply it only to the Training ecosystem.
 class LearningCyberColors {
   static const black = Color(0xFF05070C);
   static const bg0 = Color(0xFF05070C);
@@ -165,9 +146,6 @@ class LearningCyberColors {
   static const success = Color(0xFF34D399);
 }
 
-/// User-side Events ecosystem palette (ultra-premium dark: black + electric blue + neon cyan).
-///
-/// Kept separate from Admin/Learning so we can iterate without breaking other modules.
 class EventsCyberColors {
   static const black = Color(0xFF05070C);
   static const bg0 = Color(0xFF05070C);
@@ -200,14 +178,11 @@ class EventsCyberGradients {
   static LinearGradient cinematicScrim() => LinearGradient(
         begin: Alignment.bottomCenter,
         end: Alignment.topCenter,
-        colors: [Colors.black.withValues(alpha: 0.82), Colors.black.withValues(alpha: 0.35), Colors.transparent],
+        colors: [Colors.black.withOpacity(0.82), Colors.black.withOpacity(0.35), Colors.transparent],
         stops: const [0, 0.55, 1],
       );
 }
 
-/// Institutional palette (clean navy + civic blue).
-///
-/// Used in modules that need a more “institutional” look (less premium-gold).
 class InstitutionalColors {
   static const navy = Color(0xFF0B1F36);
   static const navy2 = Color(0xFF123A63);
@@ -234,47 +209,30 @@ class AdminCyberGradients {
   static LinearGradient glowBlue() => const LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
-        colors: [
-          AdminCyberColors.electricBlue,
-          AdminCyberColors.neonCyan,
-        ],
+        colors: [AdminCyberColors.electricBlue, AdminCyberColors.neonCyan],
       );
 
   static LinearGradient glowViolet() => const LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
-        colors: [
-          AdminCyberColors.neonViolet,
-          AdminCyberColors.electricBlue,
-        ],
+        colors: [AdminCyberColors.neonViolet, AdminCyberColors.electricBlue],
       );
 }
 
-/// Premium gradients (gold metal)
 class AppPremiumGradients {
   static LinearGradient thixGold(ColorScheme scheme) => LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
-        colors: [
-          scheme.tertiary,
-          scheme.secondary,
-        ],
+        colors: [scheme.tertiary, scheme.secondary],
       );
 
   static LinearGradient thixNavyToGold(ColorScheme scheme) => LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
-        colors: [
-          scheme.primary,
-          scheme.tertiary,
-        ],
+        colors: [scheme.primary, scheme.tertiary],
       );
 }
 
-/// Emergency (SOS) premium dark template tokens.
-///
-/// This palette intentionally stays dark even in light theme to match
-/// the URGENT overlay template (better contrast for the central SOS).
 class EmergencyUrgentColors {
   static const bg0 = Color(0xFF050A14);
   static const bg1 = Color(0xFF071326);
@@ -283,7 +241,6 @@ class EmergencyUrgentColors {
   static const stroke = Color(0xFF163A57);
   static const text = Color(0xFFF3F6FF);
   static const textDim = Color(0xFFA9B8D6);
-
   static const danger = DarkModeColors.emergencyRed;
   static const medicalBlue = Color(0xFF2F7DFF);
   static const safetyGreen = Color(0xFF22C55E);
@@ -291,36 +248,24 @@ class EmergencyUrgentColors {
   static const violet = Color(0xFFA78BFA);
   static const amber = Color(0xFFFBBF24);
   static const cyan = Color(0xFF22D3EE);
-
-  static Color scrim() => const Color(0xFF00040A).withValues(alpha: 0.62);
+  static Color scrim() => const Color(0xFF00040A).withOpacity(0.62);
 }
 
 class EmergencyUrgentGradients {
   static LinearGradient background() => const LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
-        colors: [
-          EmergencyUrgentColors.bg0,
-          EmergencyUrgentColors.bg1,
-        ],
+        colors: [EmergencyUrgentColors.bg0, EmergencyUrgentColors.bg1],
       );
 
   static LinearGradient panel() => const LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
-        colors: [
-          EmergencyUrgentColors.panel,
-          EmergencyUrgentColors.card,
-        ],
+        colors: [EmergencyUrgentColors.panel, EmergencyUrgentColors.card],
       );
 }
 
-/// Emergency form (medical/light) tokens used by action sheets like Blood request.
-///
-/// The SOS overlay stays dark (EmergencyUrgentColors) but forms should remain
-/// bright, medical, and highly readable.
 class EmergencyMedicalSheetColors {
-  // Light, clean medical background.
   static const bg0 = Color(0xFFF3F8FF);
   static const bg1 = Color(0xFFFFFFFF);
   static const panel = Color(0xFFFFFFFF);
@@ -339,7 +284,6 @@ class EmergencyMedicalSheetGradients {
       );
 }
 
-/// Urgency scale colors (used in medical forms).
 class EmergencyUrgencyScaleColors {
   static const stable = Color(0xFF22C55E);
   static const moderate = Color(0xFFFBBF24);
@@ -347,7 +291,6 @@ class EmergencyUrgencyScaleColors {
   static const critical = DarkModeColors.emergencyRed;
 }
 
-/// Font size constants
 class FontSizes {
   static const double headlineLarge = 20;
   static const double headlineMedium = 26.0;
@@ -406,10 +349,7 @@ ThemeData get lightTheme => ThemeData(
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadius.lg),
-          side: const BorderSide(
-            color: LightModeColors.divider,
-            width: 1,
-          ),
+          side: const BorderSide(color: LightModeColors.divider, width: 1),
         ),
       ),
       textTheme: _buildTextTheme(LightModeColors.primaryText),
@@ -456,10 +396,7 @@ ThemeData get darkTheme => ThemeData(
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadius.lg),
-          side: const BorderSide(
-            color: DarkModeColors.divider,
-            width: 1,
-          ),
+          side: const BorderSide(color: DarkModeColors.divider, width: 1),
         ),
       ),
       textTheme: _buildTextTheme(DarkModeColors.primaryText),
@@ -467,61 +404,61 @@ ThemeData get darkTheme => ThemeData(
 
 TextTheme _buildTextTheme(Color textColor) {
   return TextTheme(
-    headlineLarge: GoogleFonts.plusJakartaSans(
+    headlineLarge: TextStyle(
       fontSize: FontSizes.headlineLarge,
       fontWeight: FontWeight.w800,
       height: 1.2,
       color: textColor,
     ),
-    headlineMedium: GoogleFonts.plusJakartaSans(
+    headlineMedium: TextStyle(
       fontSize: FontSizes.headlineMedium,
       fontWeight: FontWeight.w700,
       height: 1.25,
       color: textColor,
     ),
-    titleLarge: GoogleFonts.plusJakartaSans(
+    titleLarge: TextStyle(
       fontSize: FontSizes.titleLarge,
       fontWeight: FontWeight.w700,
       height: 1.3,
       color: textColor,
     ),
-    titleMedium: GoogleFonts.plusJakartaSans(
+    titleMedium: TextStyle(
       fontSize: FontSizes.titleMedium,
       fontWeight: FontWeight.w600,
       height: 1.4,
       color: textColor,
     ),
-    labelLarge: GoogleFonts.plusJakartaSans(
+    labelLarge: TextStyle(
       fontSize: FontSizes.labelLarge,
       fontWeight: FontWeight.w600,
       height: 1.2,
       color: textColor,
     ),
-    labelMedium: GoogleFonts.plusJakartaSans(
+    labelMedium: TextStyle(
       fontSize: FontSizes.labelMedium,
       fontWeight: FontWeight.w600,
       height: 1.2,
       color: textColor,
     ),
-    labelSmall: GoogleFonts.plusJakartaSans(
+    labelSmall: TextStyle(
       fontSize: FontSizes.labelSmall,
       fontWeight: FontWeight.w700,
       height: 1.1,
       color: textColor,
     ),
-    bodyLarge: GoogleFonts.inter(
+    bodyLarge: TextStyle(
       fontSize: FontSizes.bodyLarge,
       fontWeight: FontWeight.w400,
       height: 1.6,
       color: textColor,
     ),
-    bodyMedium: GoogleFonts.inter(
+    bodyMedium: TextStyle(
       fontSize: FontSizes.bodyMedium,
       fontWeight: FontWeight.w400,
       height: 1.5,
       color: textColor,
     ),
-    bodySmall: GoogleFonts.inter(
+    bodySmall: TextStyle(
       fontSize: FontSizes.bodySmall,
       fontWeight: FontWeight.w400,
       height: 1.4,
