@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/product.dart';
 
@@ -19,7 +20,7 @@ class MarketService {
           .limit(6);
       return (response as List).map((e) => Product.fromJson(e)).toList();
     } catch (e) {
-      debugPrint('Error getFlashSales: $e');
+      if (kDebugMode) print('Error getFlashSales: $e');
       return [];
     }
   }
@@ -35,7 +36,7 @@ class MarketService {
           .limit(20);
       return (response as List).map((e) => Product.fromJson(e)).toList();
     } catch (e) {
-      debugPrint('Error getFeaturedProducts: $e');
+      if (kDebugMode) print('Error getFeaturedProducts: $e');
       return [];
     }
   }
@@ -54,7 +55,7 @@ class MarketService {
       final response = await query.order('created_at', ascending: false).limit(limit);
       return (response as List).map((e) => Product.fromJson(e)).toList();
     } catch (e) {
-      debugPrint('Error getProductsByCategory: $e');
+      if (kDebugMode) print('Error getProductsByCategory: $e');
       return [];
     }
   }
@@ -70,7 +71,7 @@ class MarketService {
           .limit(30);
       return (response as List).map((e) => Product.fromJson(e)).toList();
     } catch (e) {
-      debugPrint('Error searchProducts: $e');
+      if (kDebugMode) print('Error searchProducts: $e');
       return [];
     }
   }
@@ -84,7 +85,7 @@ class MarketService {
           .maybeSingle();
       return response != null ? Product.fromJson(response) : null;
     } catch (e) {
-      debugPrint('Error getProductById: $e');
+      if (kDebugMode) print('Error getProductById: $e');
       return null;
     }
   }
@@ -100,7 +101,7 @@ class MarketService {
           .limit(limit);
       return (response as List).map((e) => Product.fromJson(e)).toList();
     } catch (e) {
-      debugPrint('Error getProductsByCity: $e');
+      if (kDebugMode) print('Error getProductsByCity: $e');
       return [];
     }
   }
@@ -117,7 +118,7 @@ class MarketService {
           .limit(limit);
       return (response as List).map((e) => Product.fromJson(e)).toList();
     } catch (e) {
-      debugPrint('Error getProductsByPriceRange: $e');
+      if (kDebugMode) print('Error getProductsByPriceRange: $e');
       return [];
     }
   }
@@ -133,7 +134,7 @@ class MarketService {
           .limit(limit);
       return (response as List).map((e) => Product.fromJson(e)).toList();
     } catch (e) {
-      debugPrint('Error getProductsByRating: $e');
+      if (kDebugMode) print('Error getProductsByRating: $e');
       return [];
     }
   }
@@ -148,7 +149,7 @@ class MarketService {
           .select();
       return (response as List).first['id'] as String;
     } catch (e) {
-      debugPrint('Error createProduct: $e');
+      if (kDebugMode) print('Error createProduct: $e');
       rethrow;
     }
   }
@@ -160,7 +161,7 @@ class MarketService {
           .update(data)
           .eq('id', id);
     } catch (e) {
-      debugPrint('Error updateProduct: $e');
+      if (kDebugMode) print('Error updateProduct: $e');
       rethrow;
     }
   }
@@ -172,7 +173,7 @@ class MarketService {
           .delete()
           .eq('id', id);
     } catch (e) {
-      debugPrint('Error deleteProduct: $e');
+      if (kDebugMode) print('Error deleteProduct: $e');
       rethrow;
     }
   }
@@ -184,7 +185,7 @@ class MarketService {
           .update({'stock': newStock, 'in_stock': newStock > 0})
           .eq('id', id);
     } catch (e) {
-      debugPrint('Error updateStock: $e');
+      if (kDebugMode) print('Error updateStock: $e');
       rethrow;
     }
   }
@@ -195,10 +196,10 @@ class MarketService {
     try {
       final response = await _supabase
           .from('market_products')
-          .select('id', count: CountOption.exact);
-      return response.count ?? 0;
+          .select('id');
+      return (response as List).length;
     } catch (e) {
-      debugPrint('Error getTotalProducts: $e');
+      if (kDebugMode) print('Error getTotalProducts: $e');
       return 0;
     }
   }
@@ -208,7 +209,7 @@ class MarketService {
       final total = await getTotalProducts();
       final inStock = await _supabase
           .from('market_products')
-          .select('id', count: CountOption.exact)
+          .select('id')
           .eq('in_stock', true);
       final categories = await _supabase
           .from('market_products')
@@ -219,11 +220,11 @@ class MarketService {
       
       return {
         'total_products': total,
-        'in_stock': inStock.count ?? 0,
+        'in_stock': (inStock as List).length,
         'categories_count': uniqueCategories,
       };
     } catch (e) {
-      debugPrint('Error getStats: $e');
+      if (kDebugMode) print('Error getStats: $e');
       return {
         'total_products': 0,
         'in_stock': 0,
