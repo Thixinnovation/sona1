@@ -114,16 +114,18 @@ class PushNotificationService {
     }
   }
 
+  // ✅ CORRECTION: La méthode initialize ne prend pas de paramètre
   Future<void> _initLocalNotifications() async {
     // Web doesn't support flutter_local_notifications.
     if (kIsWeb) return;
 
-    final androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
-    final iosInit = DarwinInitializationSettings();
-    final init = InitializationSettings(android: androidInit, iOS: iosInit);
+    const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const iosInit = DarwinInitializationSettings();
+    const init = InitializationSettings(android: androidInit, iOS: iosInit);
+    // ✅ Correction: await _localNotifications.initialize(init);
     await _localNotifications.initialize(init);
 
-    final channel = AndroidNotificationChannel(
+    const channel = AndroidNotificationChannel(
       'thix_general',
       'THIX Notifications',
       description: 'Notifications générales THIX ID',
