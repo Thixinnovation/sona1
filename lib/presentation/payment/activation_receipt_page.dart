@@ -14,6 +14,7 @@ import 'package:thix_id/models/app_user.dart';
 import 'package:thix_id/models/thix_profile.dart';
 import 'package:thix_id/nav.dart';
 import 'package:thix_id/services/profile_service.dart';
+import 'package:thix_id/services/user_service.dart';
 import 'package:thix_id/supabase/supabase_config.dart';
 import 'package:thix_id/theme.dart';
 
@@ -52,7 +53,6 @@ class _ActivationReceiptPageState extends State<ActivationReceiptPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) => _ensureRealThixId());
   }
 
-  // ✅ Correction : appeler la méthode sans paramètres supplémentaires
   Future<void> _ensureRealThixId() async {
     if (_ensuringThixId) return;
     final auth = context.read<AuthController>();
@@ -61,9 +61,9 @@ class _ActivationReceiptPageState extends State<ActivationReceiptPage> {
     if (!_isPendingThixId(me.thixId)) return;
     setState(() => _ensuringThixId = true);
     try {
-      final users = UserService();
-      final real = await users.assignRealThixIdIfMissing(uid: me.id);
-      await auth.updateCurrentUser(me.copyWith(thixId: real, updatedAt: DateTime.now()));
+      final users = UserService(Supabase.instance.client);
+      final real = await users.ensureThixId(uid: me.id);
+      await auth.updateCurrentUser(me.copyWith(thixId: real));
     } catch (e) {
       debugPrint('ActivationReceipt: ensureRealThixId failed err=$e');
     } finally {
